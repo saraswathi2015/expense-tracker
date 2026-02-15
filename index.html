@@ -15,6 +15,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sohne:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
     <style>
         /* ===== CSS VARIABLES ===== */
         :root {
@@ -1551,18 +1554,62 @@
             
             <!-- WEALTH TAB -->
             <div id="wealthTab" class="tab-content">
+                <!-- Income & Tax Section -->
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">Net Worth</h2>
+                        <h2 class="card-title">💰 Income & Tax Summary</h2>
+                        <button class="btn btn-primary btn-sm" id="addIncomeBtn">
+                            ➕ Add Income
+                        </button>
                     </div>
-                    <div class="summary-card">
-                        <div class="summary-label">Total Net Worth</div>
-                        <div class="summary-value positive">$0</div>
+                    
+                    <!-- YTD Summary -->
+                    <div class="summary-grid">
+                        <div class="summary-card">
+                            <div class="summary-label">Gross YTD</div>
+                            <div class="summary-value positive" id="grossIncomeYTD">$0</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-label">Net YTD</div>
+                            <div class="summary-value positive" id="netIncomeYTD">$0</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-label">Tax Withheld</div>
+                            <div class="summary-value negative" id="taxWithheldYTD">$0</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-label">Effective Rate</div>
+                            <div class="summary-value" id="effectiveTaxRate">0%</div>
+                        </div>
                     </div>
-                    <div class="empty-state mt-lg">
-                        <div class="empty-icon">📈</div>
-                        <div class="empty-text">Coming in Phase 6</div>
-                        <div class="empty-subtext">Investment tracking will be available soon</div>
+                    
+                    <div id="taxBreakdown" style="display: none; margin-top: var(--spacing-lg);">
+                        <!-- Tax breakdown will be inserted here -->
+                    </div>
+                </div>
+                
+                <!-- Charts Section -->
+                <div class="card mt-lg">
+                    <div class="card-header">
+                        <h2 class="card-title">📊 Spending Analysis</h2>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--spacing-xl); margin-top: var(--spacing-lg);">
+                        <!-- Donut Chart -->
+                        <div>
+                            <h3 style="font-size: var(--text-lg); margin-bottom: var(--spacing-md); color: var(--text-primary);">
+                                Spending by Category
+                            </h3>
+                            <canvas id="categoryDonutChart"></canvas>
+                        </div>
+                        
+                        <!-- Line Chart -->
+                        <div>
+                            <h3 style="font-size: var(--text-lg); margin-bottom: var(--spacing-md); color: var(--text-primary);">
+                                30-Day Spending Trend
+                            </h3>
+                            <canvas id="spendingLineChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1641,8 +1688,8 @@
                     <h3 class="settings-title">About</h3>
                     <div class="settings-item">
                         <div class="settings-item-title">ExpenseFlow v2.0</div>
-                        <div class="settings-item-description">Phase 5 - Recurring Transactions 🔄</div>
-                        <div class="settings-item-description mt-lg">Auto-create bills and income automatically</div>
+                        <div class="settings-item-description">Phase 6 - Income/Tax + Charts 📊</div>
+                        <div class="settings-item-description mt-lg">Complete financial tracking with visualizations</div>
                     </div>
                 </div>
             </div>
@@ -2135,6 +2182,96 @@
         </div>
     </div>
     
+    <!-- Add Income Modal -->
+    <div class="modal-overlay" id="addIncomeModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Income</h3>
+                <button class="close-btn" onclick="closeModal('addIncomeModal')">×</button>
+            </div>
+            
+            <form id="addIncomeForm">
+                <div class="form-group">
+                    <label class="form-label">Gross Amount (Before Taxes)</label>
+                    <input type="number" class="form-input" id="incomeGrossAmount" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Income Date</label>
+                    <input type="date" class="form-input" id="incomeDate" required>
+                </div>
+                
+                <div style="margin: var(--spacing-lg) 0; padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: 8px;">
+                    <h4 style="margin-bottom: var(--spacing-md); color: var(--text-primary);">Tax Withholdings</h4>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Federal Tax</label>
+                        <input type="number" class="form-input" id="incomeFederalTax" step="0.01" value="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">State Tax</label>
+                        <input type="number" class="form-input" id="incomeStateTax" step="0.01" value="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Social Security (6.2% auto-calculated)</label>
+                        <input type="number" class="form-input" id="incomeSocialSecurity" step="0.01" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Medicare (1.45% auto-calculated)</label>
+                        <input type="number" class="form-input" id="incomeMedicare" step="0.01" readonly>
+                    </div>
+                </div>
+                
+                <div style="margin: var(--spacing-lg) 0; padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: 8px;">
+                    <h4 style="margin-bottom: var(--spacing-md); color: var(--text-primary);">Pre-Tax Deductions</h4>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Health Insurance</label>
+                        <input type="number" class="form-input" id="incomeHealthInsurance" step="0.01" value="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">401(k) Contribution</label>
+                        <input type="number" class="form-input" id="income401k" step="0.01" value="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">HSA/FSA</label>
+                        <input type="number" class="form-input" id="incomeHSA" step="0.01" value="0">
+                    </div>
+                </div>
+                
+                <div style="margin: var(--spacing-lg) 0; padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: 8px;">
+                    <h4 style="margin-bottom: var(--spacing-md); color: var(--text-primary);">Post-Tax Deductions</h4>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Other Deductions</label>
+                        <input type="number" class="form-input" id="incomeOtherDeductions" step="0.01" value="0">
+                    </div>
+                </div>
+                
+                <div style="margin-top: var(--spacing-lg); padding: var(--spacing-md); background: var(--accent-green); background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05)); border: 1px solid var(--accent-green); border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 600; color: var(--text-primary);">Net Take-Home:</span>
+                        <span id="calculatedNetIncome" style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--accent-green);">$0.00</span>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addIncomeModal')">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Add Income
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <!-- Toast Notification -->
     <div class="toast" id="toast"></div>
     
@@ -2168,6 +2305,7 @@
             debts: [],
             insurance: [],
             recurring: [],
+            income: [],
             settings: {
                 currency: '$',
                 budgetMonth: getCurrentMonth()
@@ -2691,6 +2829,269 @@
             renderExpenses();
             renderUpcomingBills();
             showToast(`✅ Marked as paid: ${recurring.name}`);
+        }
+        
+        // ===== INCOME & TAX TRACKING FUNCTIONS =====
+        function addIncome(income) {
+            income.id = Date.now();
+            income.createdAt = new Date().toISOString();
+            state.income.push(income);
+            saveData();
+            renderIncomeTaxSummary();
+            showToast('Income added successfully!');
+        }
+        
+        function calculateIncomeTaxSummary() {
+            const currentYear = new Date().getFullYear();
+            const yearlyIncome = state.income.filter(inc => {
+                return new Date(inc.date).getFullYear() === currentYear;
+            });
+            
+            const grossYTD = yearlyIncome.reduce((sum, inc) => sum + inc.grossAmount, 0);
+            const netYTD = yearlyIncome.reduce((sum, inc) => sum + inc.netAmount, 0);
+            
+            const federalTaxYTD = yearlyIncome.reduce((sum, inc) => sum + (inc.withholdings.federal || 0), 0);
+            const stateTaxYTD = yearlyIncome.reduce((sum, inc) => sum + (inc.withholdings.state || 0), 0);
+            const socialSecurityYTD = yearlyIncome.reduce((sum, inc) => sum + (inc.withholdings.socialSecurity || 0), 0);
+            const medicareYTD = yearlyIncome.reduce((sum, inc) => sum + (inc.withholdings.medicare || 0), 0);
+            
+            const totalTaxYTD = federalTaxYTD + stateTaxYTD + socialSecurityYTD + medicareYTD;
+            const effectiveRate = grossYTD > 0 ? ((totalTaxYTD / grossYTD) * 100).toFixed(1) : 0;
+            
+            return {
+                grossYTD,
+                netYTD,
+                totalTaxYTD,
+                effectiveRate,
+                federalTaxYTD,
+                stateTaxYTD,
+                socialSecurityYTD,
+                medicareYTD,
+                paychecksCount: yearlyIncome.length
+            };
+        }
+        
+        function renderIncomeTaxSummary() {
+            const summary = calculateIncomeTaxSummary();
+            
+            document.getElementById('grossIncomeYTD').textContent = formatCurrency(summary.grossYTD);
+            document.getElementById('netIncomeYTD').textContent = formatCurrency(summary.netYTD);
+            document.getElementById('taxWithheldYTD').textContent = formatCurrency(summary.totalTaxYTD);
+            document.getElementById('effectiveTaxRate').textContent = `${summary.effectiveRate}%`;
+            
+            // Show detailed breakdown if there's income
+            const breakdownEl = document.getElementById('taxBreakdown');
+            if (summary.grossYTD > 0) {
+                breakdownEl.style.display = 'block';
+                breakdownEl.innerHTML = `
+                    <div style="padding: var(--spacing-lg); background: var(--bg-tertiary); border-radius: 8px;">
+                        <h4 style="margin-bottom: var(--spacing-md); color: var(--text-primary);">Tax Breakdown (${summary.paychecksCount} paychecks)</h4>
+                        <div style="display: grid; gap: var(--spacing-sm);">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-secondary);">Federal Tax:</span>
+                                <span style="font-family: var(--font-display); font-weight: 600;">${formatCurrency(summary.federalTaxYTD)}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-secondary);">State Tax:</span>
+                                <span style="font-family: var(--font-display); font-weight: 600;">${formatCurrency(summary.stateTaxYTD)}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-secondary);">Social Security:</span>
+                                <span style="font-family: var(--font-display); font-weight: 600;">${formatCurrency(summary.socialSecurityYTD)}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-secondary);">Medicare:</span>
+                                <span style="font-family: var(--font-display); font-weight: 600;">${formatCurrency(summary.medicareYTD)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                breakdownEl.style.display = 'none';
+            }
+        }
+        
+        // ===== CHART RENDERING FUNCTIONS =====
+        let categoryChart = null;
+        let trendChart = null;
+        
+        function renderCharts() {
+            renderCategoryDonutChart();
+            renderSpendingTrendChart();
+        }
+        
+        function renderCategoryDonutChart() {
+            const canvas = document.getElementById('categoryDonutChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Get current month expenses by category
+            const currentMonth = getCurrentMonth();
+            const monthExpenses = getExpensesByMonth(null, currentMonth);
+            
+            if (monthExpenses.length === 0) {
+                // Destroy existing chart
+                if (categoryChart) {
+                    categoryChart.destroy();
+                    categoryChart = null;
+                }
+                return;
+            }
+            
+            // Aggregate by category
+            const categoryTotals = {};
+            monthExpenses.forEach(exp => {
+                categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
+            });
+            
+            const labels = Object.keys(categoryTotals);
+            const data = Object.values(categoryTotals);
+            const total = data.reduce((sum, val) => sum + val, 0);
+            
+            // Color palette
+            const colors = [
+                '#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6',
+                '#EC4899', '#14B8A6', '#F97316', '#6366F1', '#84CC16', '#06B6D4'
+            ];
+            
+            // Destroy existing chart
+            if (categoryChart) {
+                categoryChart.destroy();
+            }
+            
+            categoryChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels.map(cat => `${CATEGORIES[cat] || '📦'} ${cat}`),
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderColor: '#1E293B',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#F1F5F9',
+                                padding: 15,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${formatCurrency(value)} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function renderSpendingTrendChart() {
+            const canvas = document.getElementById('spendingLineChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Get last 30 days
+            const today = new Date();
+            const thirtyDaysAgo = new Date(today);
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29);
+            
+            // Create array of last 30 days
+            const days = [];
+            const dailyTotals = [];
+            
+            for (let i = 0; i < 30; i++) {
+                const date = new Date(thirtyDaysAgo);
+                date.setDate(date.getDate() + i);
+                const dateStr = date.toISOString().split('T')[0];
+                
+                days.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                
+                // Calculate total for this day
+                const dayExpenses = state.expenses.filter(exp => exp.date === dateStr);
+                const dayTotal = dayExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+                dailyTotals.push(dayTotal);
+            }
+            
+            // Destroy existing chart
+            if (trendChart) {
+                trendChart.destroy();
+            }
+            
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: days,
+                    datasets: [{
+                        label: 'Daily Spending',
+                        data: dailyTotals,
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#3B82F6',
+                        pointBorderColor: '#1E293B',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Spent: ${formatCurrency(context.parsed.y)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#94A3B8',
+                                callback: function(value) {
+                                    return '$' + value;
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(51, 65, 85, 0.5)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#94A3B8',
+                                maxRotation: 45,
+                                minRotation: 45
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
         }
         
         // ===== RENDER FUNCTIONS =====
@@ -3373,6 +3774,63 @@
             document.getElementById('addRecurringForm').reset();
         }
         
+        function handleAddIncome(e) {
+            e.preventDefault();
+            
+            const grossAmount = parseFloat(document.getElementById('incomeGrossAmount').value);
+            
+            const withholdings = {
+                federal: parseFloat(document.getElementById('incomeFederalTax').value) || 0,
+                state: parseFloat(document.getElementById('incomeStateTax').value) || 0,
+                socialSecurity: parseFloat(document.getElementById('incomeSocialSecurity').value) || 0,
+                medicare: parseFloat(document.getElementById('incomeMedicare').value) || 0,
+                healthInsurance: parseFloat(document.getElementById('incomeHealthInsurance').value) || 0,
+                retirement401k: parseFloat(document.getElementById('income401k').value) || 0,
+                hsa: parseFloat(document.getElementById('incomeHSA').value) || 0,
+                other: parseFloat(document.getElementById('incomeOtherDeductions').value) || 0
+            };
+            
+            const totalWithholdings = Object.values(withholdings).reduce((sum, val) => sum + val, 0);
+            const netAmount = grossAmount - totalWithholdings;
+            
+            const income = {
+                grossAmount,
+                netAmount,
+                withholdings,
+                date: document.getElementById('incomeDate').value
+            };
+            
+            addIncome(income);
+            closeModal('addIncomeModal');
+            document.getElementById('addIncomeForm').reset();
+        }
+        
+        // Auto-calculate Social Security and Medicare
+        function updateIncomeCalculations() {
+            const grossAmount = parseFloat(document.getElementById('incomeGrossAmount').value) || 0;
+            
+            // Auto-calculate Social Security (6.2%)
+            const socialSecurity = grossAmount * 0.062;
+            document.getElementById('incomeSocialSecurity').value = socialSecurity.toFixed(2);
+            
+            // Auto-calculate Medicare (1.45%)
+            const medicare = grossAmount * 0.0145;
+            document.getElementById('incomeMedicare').value = medicare.toFixed(2);
+            
+            // Calculate net take-home
+            const federal = parseFloat(document.getElementById('incomeFederalTax').value) || 0;
+            const state = parseFloat(document.getElementById('incomeStateTax').value) || 0;
+            const healthInsurance = parseFloat(document.getElementById('incomeHealthInsurance').value) || 0;
+            const retirement401k = parseFloat(document.getElementById('income401k').value) || 0;
+            const hsa = parseFloat(document.getElementById('incomeHSA').value) || 0;
+            const other = parseFloat(document.getElementById('incomeOtherDeductions').value) || 0;
+            
+            const totalWithholdings = federal + state + socialSecurity + medicare + healthInsurance + retirement401k + hsa + other;
+            const netAmount = grossAmount - totalWithholdings;
+            
+            document.getElementById('calculatedNetIncome').textContent = formatCurrency(netAmount);
+        }
+        
         function handleExport() {
             const dataStr = JSON.stringify(state, null, 2);
             const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -3444,6 +3902,11 @@
                     btn.classList.add('active');
                 }
             });
+            
+            // Re-render charts when switching to Wealth tab
+            if (tabName === 'wealth') {
+                setTimeout(() => renderCharts(), 100);
+            }
         }
         
         function handleFilterChange(e) {
@@ -3483,6 +3946,8 @@
             renderInsurance();
             renderRecurring();
             renderUpcomingBills();
+            renderIncomeTaxSummary();
+            renderCharts();
             updateDashboard();
             
             // Check for recurring transactions that need to be created
@@ -3578,6 +4043,21 @@
             });
             document.getElementById('addRecurringForm').addEventListener('submit', handleAddRecurring);
             
+            // Event listeners - Income
+            document.getElementById('addIncomeBtn').addEventListener('click', () => {
+                openModal('addIncomeModal');
+            });
+            document.getElementById('addIncomeForm').addEventListener('submit', handleAddIncome);
+            
+            // Auto-calculate Social Security and Medicare when gross amount changes
+            ['incomeGrossAmount', 'incomeFederalTax', 'incomeStateTax', 'incomeHealthInsurance', 
+             'income401k', 'incomeHSA', 'incomeOtherDeductions'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('input', updateIncomeCalculations);
+                }
+            });
+            
             // Event listeners - Quick Actions
             document.getElementById('viewExpensesBtn').addEventListener('click', () => {
                 switchTab('expenses');
@@ -3609,7 +4089,7 @@
                 });
             });
             
-            console.log('ExpenseFlow v2.0 Phase 5 initialized - Recurring Transactions Auto-Create Active!');
+            console.log('ExpenseFlow v2.0 Phase 6 initialized - Income/Tax + Charts Complete! 🎉');
         }
         
         // Start the app
