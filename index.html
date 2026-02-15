@@ -18,6 +18,9 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     
+    <!-- Tesseract.js for OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    
     <style>
         /* ===== CSS VARIABLES ===== */
         :root {
@@ -1428,6 +1431,127 @@
             color: var(--accent-green);
         }
         
+        /* ===== PHASE 7: ADD OPTIONS & OCR/SMS PARSER ===== */
+        .add-options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--spacing-lg);
+            padding: var(--spacing-lg) 0;
+        }
+        
+        .option-card {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: var(--spacing-xl);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .option-card:hover, .option-card:active {
+            border-color: var(--accent-green);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .option-icon {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .option-title {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+            color: var(--text-primary);
+        }
+        
+        .option-desc {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+        
+        @media (min-width: 768px) {
+            .add-options-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        .scan-upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: var(--spacing-xl);
+            text-align: center;
+            background: var(--bg-tertiary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .scan-upload-area:hover {
+            border-color: var(--accent-green);
+            background: rgba(16, 185, 129, 0.05);
+        }
+        
+        .scan-upload-area.dragover {
+            border-color: var(--accent-green);
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        
+        .loading-content {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: var(--spacing-xl);
+            text-align: center;
+            max-width: 400px;
+        }
+        
+        .loading-spinner {
+            font-size: 3rem;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .sms-textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: var(--spacing-md);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: monospace;
+            font-size: var(--text-sm);
+            resize: vertical;
+        }
+        
+        .tips-box {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid var(--accent-blue);
+            border-radius: 8px;
+            padding: var(--spacing-md);
+            margin-top: var(--spacing-md);
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+        
         /* ===== UTILITIES ===== */
         .text-center {
             text-align: center;
@@ -1837,8 +1961,8 @@
                     <h3 class="settings-title">About</h3>
                     <div class="settings-item">
                         <div class="settings-item-title">ExpenseFlow v2.0</div>
-                        <div class="settings-item-description">Phase 6 - Income/Tax + Charts 📊</div>
-                        <div class="settings-item-description mt-lg">Complete financial tracking with visualizations</div>
+                        <div class="settings-item-description">Phase 7 - Bill Scanning & SMS Parser 📸💬</div>
+                        <div class="settings-item-description mt-lg">Complete expense tracking with OCR & smart parsing</div>
                     </div>
                 </div>
             </div>
@@ -2514,6 +2638,225 @@
                     </button>
                     <button type="submit" class="btn btn-primary">
                         Add Investment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Add Options Modal (Phase 7) -->
+    <div class="modal-overlay" id="addOptionsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">How would you like to add?</h3>
+                <button class="close-btn" onclick="closeModal('addOptionsModal')">×</button>
+            </div>
+            
+            <div class="add-options-grid">
+                <!-- Manual Entry Option -->
+                <div class="option-card" onclick="selectAddMethod('manual')">
+                    <div class="option-icon">✏️</div>
+                    <div class="option-title">Manual Entry</div>
+                    <div class="option-desc">Type in the details</div>
+                </div>
+                
+                <!-- Scan Bill Option -->
+                <div class="option-card" onclick="selectAddMethod('scan')">
+                    <div class="option-icon">📸</div>
+                    <div class="option-title">Scan Bill</div>
+                    <div class="option-desc">Take photo of receipt</div>
+                </div>
+                
+                <!-- Parse SMS/Email Option -->
+                <div class="option-card" onclick="selectAddMethod('parse')">
+                    <div class="option-icon">💬</div>
+                    <div class="option-title">Parse SMS/Email</div>
+                    <div class="option-desc">Paste transaction message</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scan Bill Modal -->
+    <div class="modal-overlay" id="scanBillModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">📸 Scan Bill</h3>
+                <button class="close-btn" onclick="closeModal('scanBillModal')">×</button>
+            </div>
+            
+            <div style="padding: var(--spacing-md);">
+                <div class="scan-upload-area" id="scanUploadArea" onclick="document.getElementById('billImageInput').click()">
+                    <div style="font-size: 3rem; margin-bottom: var(--spacing-md);">📷</div>
+                    <div style="font-weight: 600; margin-bottom: var(--spacing-sm); color: var(--text-primary);">
+                        Click to upload or drag & drop
+                    </div>
+                    <div style="font-size: var(--text-sm); color: var(--text-secondary);">
+                        Upload a photo of your receipt
+                    </div>
+                </div>
+                
+                <input type="file" id="billImageInput" accept="image/*" capture="environment" style="display: none;">
+                
+                <div class="tips-box">
+                    <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">💡 Tips for best results:</div>
+                    <div>✅ Good lighting (no shadows)</div>
+                    <div>✅ Receipt flat (not wrinkled)</div>
+                    <div>✅ Clear focus (not blurry)</div>
+                    <div>✅ Entire receipt visible</div>
+                    <div style="margin-top: var(--spacing-sm);">⏳ Scanning takes 10-20 seconds</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scan Review Modal -->
+    <div class="modal-overlay" id="scanReviewModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">✅ Receipt Scanned!</h3>
+                <button class="close-btn" onclick="closeModal('scanReviewModal')">×</button>
+            </div>
+            
+            <form id="scanReviewForm">
+                <div class="form-group">
+                    <label class="form-label">Merchant</label>
+                    <input type="text" class="form-input" id="scanMerchant" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Amount</label>
+                    <input type="number" class="form-input" id="scanAmount" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="date" class="form-input" id="scanDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" id="scanCategory" required>
+                        <option value="Food">🍔 Food & Dining</option>
+                        <option value="Transport">🚗 Transport</option>
+                        <option value="Shopping">🛍️ Shopping</option>
+                        <option value="Bills">💡 Bills & Utilities</option>
+                        <option value="Entertainment">🎬 Entertainment</option>
+                        <option value="Health">💊 Health & Medical</option>
+                        <option value="Housing">🏠 Housing</option>
+                        <option value="Insurance">👔 Insurance</option>
+                        <option value="Education">🎓 Education</option>
+                        <option value="Family">👨‍👩‍👧 Family Support</option>
+                        <option value="Other">📦 Other</option>
+                    </select>
+                </div>
+                
+                <div style="background: rgba(251, 146, 60, 0.1); border: 1px solid var(--accent-amber); border-radius: 8px; padding: var(--spacing-md); margin-bottom: var(--spacing-md);">
+                    <div style="font-weight: 600; color: var(--accent-amber);">⚠️ Please verify the information</div>
+                    <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
+                        OCR may not be 100% accurate. Check all fields before saving.
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('scanReviewModal')">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Save Expense
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Parse SMS Modal -->
+    <div class="modal-overlay" id="parseSMSModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">💬 Parse Transaction Message</h3>
+                <button class="close-btn" onclick="closeModal('parseSMSModal')">×</button>
+            </div>
+            
+            <div style="padding: var(--spacing-md);">
+                <div class="form-group">
+                    <label class="form-label">Paste your transaction SMS or email here:</label>
+                    <textarea class="sms-textarea" id="smsTextInput" placeholder="Example: Your card ending in 1234 was charged $85.50 at Amazon on 02/14/2026"></textarea>
+                </div>
+                
+                <div class="tips-box">
+                    <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">💡 Supported messages:</div>
+                    <div>✅ Bank SMS alerts</div>
+                    <div>✅ Credit card notifications</div>
+                    <div>✅ PayPal/Venmo receipts</div>
+                    <div>✅ Subscription confirmations</div>
+                    <div style="margin-top: var(--spacing-sm);">⚡ Instant extraction</div>
+                </div>
+                
+                <div class="modal-footer" style="margin-top: var(--spacing-md);">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('parseSMSModal')">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="parseMessage()">
+                        Parse Message
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Parse Review Modal -->
+    <div class="modal-overlay" id="parseReviewModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">✅ Message Parsed!</h3>
+                <button class="close-btn" onclick="closeModal('parseReviewModal')">×</button>
+            </div>
+            
+            <form id="parseReviewForm">
+                <div class="form-group">
+                    <label class="form-label">Merchant</label>
+                    <input type="text" class="form-input" id="parseMerchant" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Amount</label>
+                    <input type="number" class="form-input" id="parseAmount" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="date" class="form-input" id="parseDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" id="parseCategory" required>
+                        <option value="Food">🍔 Food & Dining</option>
+                        <option value="Transport">🚗 Transport</option>
+                        <option value="Shopping">🛍️ Shopping</option>
+                        <option value="Bills">💡 Bills & Utilities</option>
+                        <option value="Entertainment">🎬 Entertainment</option>
+                        <option value="Health">💊 Health & Medical</option>
+                        <option value="Housing">🏠 Housing</option>
+                        <option value="Insurance">👔 Insurance</option>
+                        <option value="Education">🎓 Education</option>
+                        <option value="Family">👨‍👩‍👧 Family Support</option>
+                        <option value="Other">📦 Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Original Message:</label>
+                    <div id="originalMessage" style="background: var(--bg-tertiary); padding: var(--spacing-md); border-radius: 8px; font-size: var(--text-sm); color: var(--text-secondary); font-family: monospace; white-space: pre-wrap;"></div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('parseReviewModal')">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Save Expense
                     </button>
                 </div>
             </form>
@@ -3351,6 +3694,283 @@
                 netWorthEl.textContent = formatCurrency(netWorth);
                 netWorthEl.className = 'summary-value ' + (netWorth >= 0 ? 'positive' : 'negative');
             }
+        }
+        
+        // ===== PHASE 7: OCR & SMS PARSER FUNCTIONS =====
+        
+        function showAddOptions() {
+            openModal('addOptionsModal');
+        }
+        
+        function selectAddMethod(method) {
+            closeModal('addOptionsModal');
+            
+            switch(method) {
+                case 'manual':
+                    openModal('addExpenseModal');
+                    break;
+                case 'scan':
+                    openModal('scanBillModal');
+                    break;
+                case 'parse':
+                    openModal('parseSMSModal');
+                    break;
+            }
+        }
+        
+        // OCR Bill Scanning Functions
+        async function scanBill(imageFile) {
+            try {
+                showLoadingOverlay('Scanning receipt... This may take 10-20 seconds');
+                
+                const worker = await Tesseract.createWorker();
+                await worker.loadLanguage('eng');
+                await worker.initialize('eng');
+                
+                const { data: { text } } = await worker.recognize(imageFile);
+                await worker.terminate();
+                
+                const extractedData = extractBillData(text);
+                
+                hideLoadingOverlay();
+                showScanReview(extractedData);
+                
+            } catch (error) {
+                hideLoadingOverlay();
+                showToast('❌ Failed to scan receipt. Please try manual entry.');
+                console.error('OCR Error:', error);
+            }
+        }
+        
+        function extractBillData(ocrText) {
+            const lines = ocrText.split('\n').filter(line => line.trim());
+            const merchant = lines[0] || 'Unknown Merchant';
+            
+            // Extract amount (look for $ followed by numbers)
+            const amountRegex = /\$?\s*(\d+\.\d{2})/g;
+            const amounts = [...ocrText.matchAll(amountRegex)];
+            const amount = amounts.length > 0 ? parseFloat(amounts[amounts.length - 1][1]) : 0;
+            
+            // Extract date
+            const dateRegex = /(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/;
+            const dateMatch = ocrText.match(dateRegex);
+            const date = dateMatch ? parseDateFromReceipt(dateMatch[1]) : new Date().toISOString().split('T')[0];
+            
+            const category = suggestCategory(merchant);
+            
+            return { merchant, amount, date, category, rawText: ocrText };
+        }
+        
+        function parseDateFromReceipt(dateStr) {
+            // Try to parse date from various formats
+            const parts = dateStr.split(/[-\/]/);
+            if (parts.length === 3) {
+                // Assume MM/DD/YYYY or DD/MM/YYYY
+                let month, day, year;
+                if (parts[2].length === 4) {
+                    year = parts[2];
+                    month = parts[0].padStart(2, '0');
+                    day = parts[1].padStart(2, '0');
+                } else {
+                    year = '20' + parts[2];
+                    month = parts[0].padStart(2, '0');
+                    day = parts[1].padStart(2, '0');
+                }
+                return `${year}-${month}-${day}`;
+            }
+            return new Date().toISOString().split('T')[0];
+        }
+        
+        function suggestCategory(merchantName) {
+            const merchant = merchantName.toLowerCase();
+            
+            // Food & Dining
+            if (merchant.includes('restaurant') || merchant.includes('cafe') || 
+                merchant.includes('food') || merchant.includes('pizza') ||
+                merchant.includes('burger') || merchant.includes('starbucks') ||
+                merchant.includes('whole foods') || merchant.includes('trader joe') ||
+                merchant.includes('safeway') || merchant.includes('kroger') ||
+                merchant.includes('swiggy') || merchant.includes('zomato')) {
+                return 'Food';
+            }
+            
+            // Transport
+            if (merchant.includes('gas') || merchant.includes('shell') || 
+                merchant.includes('chevron') || merchant.includes('uber') ||
+                merchant.includes('lyft') || merchant.includes('parking') ||
+                merchant.includes('ola')) {
+                return 'Transport';
+            }
+            
+            // Shopping
+            if (merchant.includes('amazon') || merchant.includes('target') ||
+                merchant.includes('walmart') || merchant.includes('mall')) {
+                return 'Shopping';
+            }
+            
+            // Bills
+            if (merchant.includes('electric') || merchant.includes('water') ||
+                merchant.includes('internet') || merchant.includes('phone') ||
+                merchant.includes('netflix') || merchant.includes('spotify')) {
+                return 'Bills';
+            }
+            
+            // Health
+            if (merchant.includes('pharmacy') || merchant.includes('cvs') ||
+                merchant.includes('walgreens') || merchant.includes('hospital') ||
+                merchant.includes('clinic')) {
+                return 'Health';
+            }
+            
+            return 'Other';
+        }
+        
+        function showScanReview(data) {
+            document.getElementById('scanMerchant').value = data.merchant;
+            document.getElementById('scanAmount').value = data.amount;
+            document.getElementById('scanDate').value = data.date;
+            document.getElementById('scanCategory').value = data.category;
+            
+            closeModal('scanBillModal');
+            openModal('scanReviewModal');
+        }
+        
+        // SMS/Email Parser Functions
+        function parseMessage() {
+            const messageText = document.getElementById('smsTextInput').value.trim();
+            
+            if (!messageText) {
+                showToast('⚠️ Please paste a message first');
+                return;
+            }
+            
+            const extracted = parseSMSEmail(messageText);
+            
+            if (!extracted.success) {
+                showToast('❌ Could not extract data. Please check the format or use manual entry.');
+                return;
+            }
+            
+            showParseReview(extracted, messageText);
+        }
+        
+        function parseSMSEmail(messageText) {
+            const extracted = {
+                amount: null,
+                merchant: null,
+                date: null,
+                category: null,
+                success: false
+            };
+            
+            // Extract amount (USD)
+            const amountUSRegex = /\$\s*(\d+(?:,\d{3})*(?:\.\d{2})?)/;
+            const amountUSMatch = messageText.match(amountUSRegex);
+            if (amountUSMatch) {
+                extracted.amount = parseFloat(amountUSMatch[1].replace(/,/g, ''));
+                extracted.success = true;
+            }
+            
+            // Extract amount (INR)
+            const amountINRRegex = /Rs\.?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)/i;
+            const amountINRMatch = messageText.match(amountINRRegex);
+            if (amountINRMatch && !extracted.amount) {
+                extracted.amount = parseFloat(amountINRMatch[1].replace(/,/g, ''));
+                extracted.success = true;
+            }
+            
+            // Extract merchant - common patterns
+            const merchantPatterns = [
+                /at\s+([A-Z][A-Za-z\s&]+?)(?:\s+on|\.|$)/,
+                /to\s+([A-Z][A-Za-z\s&]+?)(?:\s+on|\.|$)/,
+                /for\s+([A-Z][A-Za-z\s&]+?)(?:\s+on|\.|$)/,
+                /from\s+([A-Z][A-Za-z\s&]+?)(?:\s+on|\.|$)/
+            ];
+            
+            for (const pattern of merchantPatterns) {
+                const match = messageText.match(pattern);
+                if (match) {
+                    extracted.merchant = match[1].trim();
+                    break;
+                }
+            }
+            
+            // Extract date
+            const dateRegex = /(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/;
+            const dateMatch = messageText.match(dateRegex);
+            extracted.date = dateMatch ? parseDateFromReceipt(dateMatch[1]) : new Date().toISOString().split('T')[0];
+            
+            // Suggest category
+            if (extracted.merchant) {
+                extracted.category = suggestCategory(extracted.merchant);
+            } else {
+                extracted.category = 'Other';
+                extracted.merchant = 'Unknown';
+            }
+            
+            return extracted;
+        }
+        
+        function showParseReview(data, originalMessage) {
+            document.getElementById('parseMerchant').value = data.merchant;
+            document.getElementById('parseAmount').value = data.amount;
+            document.getElementById('parseDate').value = data.date;
+            document.getElementById('parseCategory').value = data.category;
+            document.getElementById('originalMessage').textContent = originalMessage;
+            
+            closeModal('parseSMSModal');
+            openModal('parseReviewModal');
+        }
+        
+        function handleScanReview(e) {
+            e.preventDefault();
+            
+            const expense = {
+                amount: parseFloat(document.getElementById('scanAmount').value),
+                description: document.getElementById('scanMerchant').value,
+                category: document.getElementById('scanCategory').value,
+                date: document.getElementById('scanDate').value
+            };
+            
+            addExpense(expense);
+            closeModal('scanReviewModal');
+            document.getElementById('scanReviewForm').reset();
+            showToast('✅ Expense added from scanned receipt!');
+        }
+        
+        function handleParseReview(e) {
+            e.preventDefault();
+            
+            const expense = {
+                amount: parseFloat(document.getElementById('parseAmount').value),
+                description: document.getElementById('parseMerchant').value,
+                category: document.getElementById('parseCategory').value,
+                date: document.getElementById('parseDate').value
+            };
+            
+            addExpense(expense);
+            closeModal('parseReviewModal');
+            document.getElementById('parseReviewForm').reset();
+            document.getElementById('smsTextInput').value = '';
+            showToast('✅ Expense added from message!');
+        }
+        
+        function showLoadingOverlay(message) {
+            const overlay = document.createElement('div');
+            overlay.id = 'loadingOverlay';
+            overlay.className = 'loading-overlay';
+            overlay.innerHTML = `
+                <div class="loading-content">
+                    <div class="loading-spinner">🔄</div>
+                    <div style="margin-top: var(--spacing-md); font-weight: 600; color: var(--text-primary);">${message}</div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+        
+        function hideLoadingOverlay() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) overlay.remove();
         }
         
         // ===== CHART RENDERING FUNCTIONS =====
@@ -4439,12 +5059,12 @@
             // Load settings
             document.getElementById('currencySelect').value = state.settings.currency;
             
-            // Event listeners - Add Expense
+            // Event listeners - Add Expense (Updated for Phase 7)
             document.getElementById('addExpenseBtn').addEventListener('click', () => {
-                openModal('addExpenseModal');
+                showAddOptions(); // Phase 7: Show options modal instead
             });
             document.getElementById('addExpenseBtn2').addEventListener('click', () => {
-                openModal('addExpenseModal');
+                showAddOptions(); // Phase 7: Show options modal instead
             });
             document.getElementById('addExpenseForm').addEventListener('submit', handleAddExpense);
             
@@ -4544,6 +5164,41 @@
             });
             document.getElementById('addInvestmentForm').addEventListener('submit', handleAddInvestment);
             
+            // Event listeners - Phase 7: OCR & SMS Parser
+            document.getElementById('billImageInput').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    closeModal('scanBillModal');
+                    scanBill(file);
+                }
+            });
+            
+            // Drag and drop for bill scanning
+            const uploadArea = document.getElementById('scanUploadArea');
+            if (uploadArea) {
+                uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.add('dragover');
+                });
+                
+                uploadArea.addEventListener('dragleave', () => {
+                    uploadArea.classList.remove('dragover');
+                });
+                
+                uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.remove('dragover');
+                    const file = e.dataTransfer.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                        closeModal('scanBillModal');
+                        scanBill(file);
+                    }
+                });
+            }
+            
+            document.getElementById('scanReviewForm').addEventListener('submit', handleScanReview);
+            document.getElementById('parseReviewForm').addEventListener('submit', handleParseReview);
+            
             // Event listeners - Quick Actions
             document.getElementById('viewExpensesBtn').addEventListener('click', () => {
                 switchTab('expenses');
@@ -4575,7 +5230,7 @@
                 });
             });
             
-            console.log('ExpenseFlow v2.0 Phase 6 initialized - Income/Tax + Charts Complete! 🎉');
+            console.log('ExpenseFlow v2.0 Phase 7 COMPLETE! 📸💬 Bill Scanning & SMS Parser Active!');
         }
         
         // Start the app
