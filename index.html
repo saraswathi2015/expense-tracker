@@ -733,6 +733,94 @@
             }
         }
         
+        /* ===== TOGGLE SWITCH ===== */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-sm);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bg-tertiary);
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: var(--text-secondary);
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--accent-green);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+            background-color: white;
+        }
+        
+        .toggle-label {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            user-select: none;
+        }
+        
+        input:checked ~ .toggle-label {
+            color: var(--accent-green);
+        }
+        
+        /* ===== ROLLOVER INFO ===== */
+        .rollover-info {
+            background: var(--bg-tertiary);
+            border-left: 3px solid var(--accent-green);
+            padding: var(--spacing-sm) var(--spacing-md);
+            margin-top: var(--spacing-sm);
+            border-radius: 4px;
+            font-size: var(--text-sm);
+        }
+        
+        .rollover-amount {
+            font-family: var(--font-display);
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+        
+        .budget-breakdown {
+            margin-top: var(--spacing-xs);
+            padding-top: var(--spacing-xs);
+            border-top: 1px solid var(--border-color);
+            font-size: var(--text-xs);
+            color: var(--text-muted);
+        }
+        
         /* ===== UTILITIES ===== */
         .text-center {
             text-align: center;
@@ -943,8 +1031,8 @@
                     <h3 class="settings-title">About</h3>
                     <div class="settings-item">
                         <div class="settings-item-title">ExpenseFlow v2.0</div>
-                        <div class="settings-item-description">Phase 1 - Core Foundation</div>
-                        <div class="settings-item-description mt-lg">Privacy-first expense tracker with advanced features</div>
+                        <div class="settings-item-description">Phase 2 - Rollover Budgets ✅</div>
+                        <div class="settings-item-description mt-lg">Privacy-first expense tracker with rollover budget management</div>
                     </div>
                 </div>
             </div>
@@ -1055,56 +1143,133 @@
                 <div class="form-group">
                     <label class="form-label">🍔 Food & Dining</label>
                     <input type="number" class="form-input" id="budgetFood" step="0.01" placeholder="0.00">
+                    <div class="toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="rolloverFood">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Rollover unused budget to next month</span>
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label">🚗 Transport</label>
                     <input type="number" class="form-input" id="budgetTransport" step="0.01" placeholder="0.00">
+                    <div class="toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="rolloverTransport">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Rollover unused budget to next month</span>
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label">🛍️ Shopping</label>
                     <input type="number" class="form-input" id="budgetShopping" step="0.01" placeholder="0.00">
+                    <div class="toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="rolloverShopping">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Rollover unused budget to next month</span>
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label">💡 Bills & Utilities</label>
                     <input type="number" class="form-input" id="budgetBills" step="0.01" placeholder="0.00">
+                    <div class="toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="rolloverBills">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Rollover unused budget to next month</span>
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label">🎬 Entertainment</label>
                     <input type="number" class="form-input" id="budgetEntertainment" step="0.01" placeholder="0.00">
+                    <div class="toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="rolloverEntertainment">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Rollover unused budget to next month</span>
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label">💊 Health & Medical</label>
                     <input type="number" class="form-input" id="budgetHealth" step="0.01" placeholder="0.00">
+                    <div class="toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="rolloverHealth">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Rollover unused budget to next month</span>
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label">🏠 Housing</label>
                     <input type="number" class="form-input" id="budgetHousing" step="0.01" placeholder="0.00">
+                    <div class="toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="rolloverHousing">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Rollover unused budget to next month</span>
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label">👔 Insurance</label>
                     <input type="number" class="form-input" id="budgetInsurance" step="0.01" placeholder="0.00">
+                    <div class="toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="rolloverInsurance">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Rollover unused budget to next month</span>
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label">🎓 Education</label>
                     <input type="number" class="form-input" id="budgetEducation" step="0.01" placeholder="0.00">
+                    <div class="toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="rolloverEducation">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Rollover unused budget to next month</span>
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label">👨‍👩‍👧 Family Support</label>
                     <input type="number" class="form-input" id="budgetFamily" step="0.01" placeholder="0.00">
+                    <div class="toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="rolloverFamily">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Rollover unused budget to next month</span>
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label">📦 Other</label>
                     <input type="number" class="form-input" id="budgetOther" step="0.01" placeholder="0.00">
+                    <div class="toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="rolloverOther">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Rollover unused budget to next month</span>
+                    </div>
                 </div>
                 
                 <div class="modal-footer">
@@ -1269,6 +1434,27 @@
             showToast('Budgets saved successfully!');
         }
         
+        function calculateRollover(category) {
+            const budget = state.budgets[category];
+            if (!budget || !budget.rollover) {
+                return 0;
+            }
+            
+            // Get previous month
+            const currentMonth = getCurrentMonth();
+            const previousMonth = getPreviousMonth(currentMonth);
+            
+            // Get expenses from previous month
+            const previousExpenses = getExpensesByMonth(category, previousMonth);
+            const previousTotal = previousExpenses.reduce((sum, e) => sum + e.amount, 0);
+            
+            // Calculate what was saved
+            const saved = budget.amount - previousTotal;
+            
+            // Only rollover positive amounts
+            return saved > 0 ? saved : 0;
+        }
+        
         function calculateBudgetProgress(category) {
             const budget = state.budgets[category];
             if (!budget || budget.amount <= 0) return null;
@@ -1276,15 +1462,47 @@
             const currentMonth = getCurrentMonth();
             const expenses = getExpensesByMonth(category, currentMonth);
             const spent = expenses.reduce((sum, e) => sum + e.amount, 0);
-            const remaining = budget.amount - spent;
-            const percentage = (spent / budget.amount) * 100;
+            
+            // Calculate rollover if enabled
+            const rolloverAmount = budget.rollover ? (budget.rolloverBalance || 0) : 0;
+            const totalBudget = budget.amount + rolloverAmount;
+            
+            const remaining = totalBudget - spent;
+            const percentage = (spent / totalBudget) * 100;
             
             return {
                 budget: budget.amount,
+                rolloverAmount: rolloverAmount,
+                totalBudget: totalBudget,
                 spent,
                 remaining,
-                percentage: Math.min(percentage, 100)
+                percentage: Math.min(percentage, 100),
+                hasRollover: budget.rollover && rolloverAmount > 0
             };
+        }
+        
+        function updateRolloverBalances() {
+            // This is called when viewing a new month
+            // It calculates and stores the rollover from the previous month
+            const currentMonth = getCurrentMonth();
+            const previousMonth = getPreviousMonth(currentMonth);
+            
+            Object.keys(state.budgets).forEach(category => {
+                const budget = state.budgets[category];
+                if (budget && budget.rollover) {
+                    // Get previous month expenses
+                    const previousExpenses = getExpensesByMonth(category, previousMonth);
+                    const previousTotal = previousExpenses.reduce((sum, e) => sum + e.amount, 0);
+                    
+                    // Calculate saved amount
+                    const saved = budget.amount - previousTotal;
+                    
+                    // Update rollover balance
+                    budget.rolloverBalance = saved > 0 ? saved : 0;
+                }
+            });
+            
+            saveData();
         }
         
         // ===== RENDER FUNCTIONS =====
@@ -1371,6 +1589,20 @@
                 const progressClass = progress.percentage < 80 ? 'low' : 
                                     progress.percentage < 100 ? 'medium' : 'high';
                 
+                // Rollover info display
+                const rolloverHTML = progress.hasRollover ? `
+                    <div class="rollover-info">
+                        💚 Rollover from last month: <span class="rollover-amount">+${formatCurrency(progress.rolloverAmount)}</span>
+                        <div class="budget-breakdown">
+                            Base: ${formatCurrency(progress.budget)} + Rollover: ${formatCurrency(progress.rolloverAmount)} = Total: ${formatCurrency(progress.totalBudget)}
+                        </div>
+                    </div>
+                ` : budget.rollover ? `
+                    <div class="rollover-info" style="border-left-color: var(--text-muted);">
+                        🔄 Rollover enabled • Unused budget carries to next month
+                    </div>
+                ` : '';
+                
                 return `
                     <div class="budget-item">
                         <div class="budget-header">
@@ -1379,12 +1611,13 @@
                                 <span>${category}</span>
                             </div>
                             <div class="budget-amounts">
-                                ${formatCurrency(progress.spent)} / ${formatCurrency(progress.budget)}
+                                ${formatCurrency(progress.spent)} / ${formatCurrency(progress.totalBudget)}
                             </div>
                         </div>
                         <div class="progress-bar">
                             <div class="progress-fill ${progressClass}" style="width: ${progress.percentage}%"></div>
                         </div>
+                        ${rolloverHTML}
                     </div>
                 `;
             }).join('');
@@ -1395,8 +1628,16 @@
             const expenses = getExpensesByMonth(null, currentMonth);
             const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
             
-            // Calculate total budget
-            const totalBudget = Object.values(state.budgets).reduce((sum, b) => sum + (b.amount || 0), 0);
+            // Calculate total budget including rollovers
+            let totalBudget = 0;
+            Object.keys(state.budgets).forEach(category => {
+                const budget = state.budgets[category];
+                if (budget && budget.amount > 0) {
+                    const rolloverAmount = budget.rollover ? (budget.rolloverBalance || 0) : 0;
+                    totalBudget += budget.amount + rolloverAmount;
+                }
+            });
+            
             const budgetLeft = totalBudget - totalSpent;
             const budgetUsedPct = totalBudget > 0 ? ((totalSpent / totalBudget) * 100).toFixed(0) : 0;
             
@@ -1441,11 +1682,18 @@
             const budgets = {};
             Object.keys(CATEGORIES).forEach(category => {
                 const inputId = `budget${category}`;
+                const rolloverInputId = `rollover${category}`;
                 const value = parseFloat(document.getElementById(inputId).value) || 0;
+                const rollover = document.getElementById(rolloverInputId).checked;
+                
+                // Preserve existing rollover balance if it exists
+                const existingBudget = state.budgets[category];
+                const rolloverBalance = existingBudget ? existingBudget.rolloverBalance : 0;
+                
                 budgets[category] = {
                     amount: value,
-                    rollover: false,
-                    rolloverBalance: 0
+                    rollover: rollover,
+                    rolloverBalance: rolloverBalance
                 };
             });
             
@@ -1544,6 +1792,15 @@
             // Load data
             loadData();
             
+            // Check if month changed and update rollover balances
+            const savedMonth = state.settings.budgetMonth;
+            const currentMonth = getCurrentMonth();
+            if (savedMonth && savedMonth !== currentMonth) {
+                updateRolloverBalances();
+                state.settings.budgetMonth = currentMonth;
+                saveData();
+            }
+            
             // Set today's date as default
             document.getElementById('expenseDate').valueAsDate = new Date();
             
@@ -1552,11 +1809,12 @@
             renderBudgets();
             updateDashboard();
             
-            // Load budgets into edit form
+            // Load budgets and rollover states into edit form
             Object.keys(CATEGORIES).forEach(category => {
                 const budget = state.budgets[category];
                 if (budget) {
                     document.getElementById(`budget${category}`).value = budget.amount || '';
+                    document.getElementById(`rollover${category}`).checked = budget.rollover || false;
                 }
             });
             
@@ -1622,7 +1880,7 @@
                 });
             });
             
-            console.log('ExpenseFlow v2.0 Phase 1 initialized!');
+            console.log('ExpenseFlow v2.0 Phase 2 initialized - Rollover Budgets Active!');
         }
         
         // Start the app
