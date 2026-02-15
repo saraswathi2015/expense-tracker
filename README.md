@@ -1,345 +1,399 @@
-# 💰 ExpenseFlow - Smart Expense Tracker PWA
+# 💰 Expense Tracker
 
-A comprehensive Progressive Web App for tracking personal expenses with AI-powered bill scanning, SMS/email parsing, budget management, and advanced analytics.
-
-## ✨ Features
-
-### Core Functionality
-- **📸 AI Bill Scanning**: Upload photos of receipts/bills - AI extracts merchant, amount, date, and items automatically using OCR
-- **💬 SMS/Email Parser**: Paste transaction messages to automatically extract expense details
-- **💰 Manual Entry**: Quick manual expense entry with intuitive form
-- **🏷️ Smart Categorization**: Auto-categorizes expenses (Food, Transport, Shopping, Bills, Entertainment, Health, Other)
-
-### Budget Management
-- **🎯 Category Budgets**: Set monthly budgets for each category
-- **📊 Real-time Tracking**: Visual progress bars showing budget utilization
-- **⚠️ Smart Alerts**: Get warnings when approaching budget limits (80%, 100%)
-- **💡 Budget Insights**: Track remaining budget and overspending
-
-### Analytics & Insights
-- **📈 Spending Trends**: 30-day trend chart showing daily spending patterns
-- **🥧 Category Breakdown**: Visual pie chart of spending by category
-- **💡 AI Insights**: Smart insights about spending habits
-  - Month-over-month comparisons
-  - Most active spending days
-  - Average expense calculations
-  - Top spending categories
-
-### Data Management
-- **💾 Local Storage**: All data stored on your device (complete privacy)
-- **📤 Export/Import**: Backup and restore data as JSON files
-- **🔄 Cross-Device Sync**: Manually transfer data between phone and laptop
-- **🗑️ Data Control**: Clear all data option
-
-### User Experience
-- **📱 Responsive Design**: Works perfectly on phone and laptop
-- **🌙 Dark Theme**: Eye-friendly dark interface with financial data focus
-- **⚡ Offline Support**: Works completely offline (PWA)
-- **🏠 Installable**: Add to home screen on phone or desktop
-- **🔔 Real-time Notifications**: Success, warning, and error alerts
-
-## 🚀 Getting Started
-
-### Installation Options
-
-#### Option 1: Deploy to Web Server (Recommended)
-1. Upload all files to your web server
-2. Access via browser on phone/laptop
-3. Click "Add to Home Screen" to install as app
-
-#### Option 2: Local Development Server
-```bash
-# Using Python
-cd expense-tracker
-python -m http.server 8000
-
-# Using Node.js
-npx serve
-
-# Using PHP
-php -S localhost:8000
-```
-
-Then open: `http://localhost:8000`
-
-#### Option 3: GitHub Pages (Free Hosting)
-1. Create a GitHub repository
-2. Upload all files
-3. Enable GitHub Pages in repository settings
-4. Access via `https://yourusername.github.io/repo-name`
-
-### First-Time Setup
-
-1. **Access the App**: Open in your web browser
-2. **Install (Optional)**: 
-   - **Phone**: Tap browser menu → "Add to Home Screen"
-   - **Desktop**: Click install icon in address bar
-3. **Set Budgets**: Go to Budget tab → "Set Monthly Budget"
-4. **Configure Settings**: Adjust currency and default category
-
-## 📖 Usage Guide
-
-### Adding Expenses
-
-#### Method 1: Manual Entry
-1. Click "Add Expense" on dashboard
-2. Fill in amount, merchant, category, date
-3. Click "Add Expense"
-
-#### Method 2: Scan Bill (Recommended)
-1. Click "Scan Bill" on dashboard
-2. Take photo or upload image of receipt
-3. AI extracts details automatically
-4. Review and confirm
-5. Click "Save Expense"
-
-**Supported Bill Formats:**
-- Restaurant bills
-- Shopping receipts
-- Utility bills
-- Any printed receipt with clear text
-
-#### Method 3: Parse SMS/Email
-1. Click "Parse SMS/Email"
-2. Copy transaction message from SMS/email
-3. Paste into text box
-4. Click "Parse Message"
-5. Review extracted details
-6. Click "Save Expense"
-
-**Example SMS Formats:**
-```
-Rs.450 debited from A/c XX1234 on 15-Feb for SWIGGY transaction
-
-Your ICICI Bank A/c XX7890 is debited with INR 1,200 on 14-Feb-25 at UBER
-
-Payment of Rs.299 made to NETFLIX via UPI
-```
-
-### Budget Management
-
-1. Navigate to "Budget" tab
-2. Click "Set Monthly Budget"
-3. Enter budget amounts for each category
-4. Click "Save Budgets"
-
-**Budget Alerts:**
-- **Green**: Under 80% of budget
-- **Amber**: 80-100% of budget (warning)
-- **Red**: Over budget (alert)
-
-### Viewing Analytics
-
-Navigate to "Analytics" tab to see:
-- **Category Chart**: Pie chart of spending distribution
-- **Trend Chart**: 30-day line graph of daily expenses
-- **AI Insights**: Spending patterns and recommendations
-
-### Data Management
-
-#### Export Data
-1. Go to Settings → "Export Data (JSON)"
-2. Save the JSON file to your device
-3. Keep this file safe as backup
-
-#### Import Data
-1. Go to Settings → "Import Data"
-2. Select previously exported JSON file
-3. Confirm replacement of current data
-
-#### Sync Between Devices
-1. Export data from Device A
-2. Transfer JSON file (email, cloud, USB)
-3. Import data on Device B
-
-## 🎨 Features in Detail
-
-### Smart Categorization
-
-The app automatically detects expense categories from:
-- Merchant names (Swiggy → Food, Uber → Transport)
-- Keywords in bills/messages
-- Common patterns
-
-Categories:
-- 🍔 **Food & Dining**: Restaurants, food delivery, groceries
-- 🚗 **Transport**: Uber, Ola, fuel, parking
-- 🛍️ **Shopping**: Amazon, Flipkart, retail
-- 💡 **Bills & Utilities**: Electricity, water, internet, subscriptions
-- 🎬 **Entertainment**: Movies, Netflix, Spotify, games
-- 💊 **Health & Fitness**: Pharmacy, gym, medical
-- 📦 **Other**: Everything else
-
-### OCR Technology
-
-Bill scanning uses **Tesseract.js** for optical character recognition:
-- Extracts merchant names
-- Identifies amounts (₹, Rs., INR formats)
-- Detects dates in multiple formats
-- Reads line items
-
-**Tips for Best Results:**
-- Good lighting when taking photos
-- Flat, unwrinkled receipts
-- Clear, in-focus images
-- Complete bill visible in frame
-
-### Privacy & Security
-
-- **100% Local Storage**: All data stored in browser localStorage
-- **No Cloud Sync**: Zero data transmission to external servers
-- **No Tracking**: No analytics or tracking code
-- **No Accounts**: No login required, no personal info collected
-- **Full Control**: Export, import, or delete data anytime
-
-## 📱 PWA Features
-
-### Offline Support
-- Works without internet connection
-- Caches essential resources
-- Data always accessible
-
-### Installability
-**Phone:**
-- Appears on home screen like native app
-- No browser UI (fullscreen)
-- Fast startup
-
-**Desktop:**
-- Installable from browser
-- Standalone window
-- Easy access from taskbar
-
-## 🛠️ Technical Stack
-
-- **Frontend**: Pure HTML5, CSS3, JavaScript (no frameworks)
-- **Charts**: Chart.js for analytics visualization
-- **OCR**: Tesseract.js for bill scanning
-- **Storage**: localStorage API (browser-based)
-- **PWA**: Service Workers for offline functionality
-- **Responsive**: Mobile-first CSS Grid/Flexbox design
-
-## 📊 Browser Compatibility
-
-- ✅ Chrome/Edge (Desktop & Mobile) - Recommended
-- ✅ Safari (iOS 11.3+)
-- ✅ Firefox (Desktop & Mobile)
-- ✅ Samsung Internet
-- ⚠️ OCR may be slower on older devices
-
-## 🔧 Customization
-
-### Change Currency
-1. Go to Settings
-2. Select your currency from dropdown
-3. All amounts will update automatically
-
-### Modify Categories
-Edit the `categoryIcons` object in `index.html` to add/remove categories:
-
-```javascript
-const categoryIcons = {
-    'Food': '🍔',
-    'Transport': '🚗',
-    'YourCategory': '🏷️',  // Add custom category
-    // ...
-};
-```
-
-### Adjust Theme Colors
-Modify CSS variables in `index.html`:
-
-```css
-:root {
-    --bg-primary: #0F172A;      /* Main background */
-    --accent-green: #10B981;    /* Primary accent */
-    /* ... more colors */
-}
-```
-
-## 💡 Tips & Best Practices
-
-1. **Regular Backups**: Export data monthly for safety
-2. **Set Realistic Budgets**: Start conservative, adjust as needed
-3. **Daily Tracking**: Add expenses daily for accuracy
-4. **Use Bill Scanning**: Faster and more accurate than manual entry
-5. **Review Analytics**: Check insights weekly to improve spending habits
-6. **Clear Old Data**: Archive and clear data yearly to maintain performance
-
-## 🐛 Troubleshooting
-
-### OCR Not Working
-- Ensure good lighting and clear image
-- Try rotating or cropping the image
-- Fallback to manual entry if needed
-
-### Data Not Syncing Between Devices
-- PWA uses local storage (no auto-sync)
-- Use export/import feature to manually transfer data
-
-### App Not Installing
-- Use supported browser (Chrome, Safari, Edge)
-- Check if already installed
-- Try clearing browser cache
-
-### Charts Not Displaying
-- Check if Chart.js loaded (network required first time)
-- Refresh page
-- Ensure JavaScript is enabled
-
-## 📄 File Structure
-
-```
-expense-tracker/
-├── index.html          # Main app file (all-in-one)
-├── manifest.json       # PWA manifest
-├── sw.js              # Service worker (offline support)
-└── README.md          # This file
-```
-
-## 🔐 Privacy Policy
-
-This app:
-- Stores ALL data locally on your device
-- Does NOT transmit data to any server
-- Does NOT use cookies or tracking
-- Does NOT collect personal information
-- Does NOT require internet after initial load
-
-Your data is YOURS. Period.
-
-## 📝 Version History
-
-**v1.0** (Current)
-- AI-powered bill scanning
-- SMS/Email parsing
-- Budget tracking with alerts
-- Category-wise analytics
-- Spending trend charts
-- Export/Import functionality
-- PWA support with offline mode
-- Dark theme interface
-
-## 🤝 Contributing
-
-This is a personal expense tracker. Feel free to:
-- Fork and customize for your needs
-- Suggest improvements
-- Report bugs
-
-## 📧 Support
-
-For issues or questions:
-1. Check this README
-2. Review browser console for errors
-3. Try clearing app data and reloading
-
-## ⚖️ License
-
-Free to use for personal expense tracking. All rights reserved.
+A comprehensive personal expense tracking app with smart budgeting, insurance deductible tracking, and automated recurring transactions. Track your finances efficiently with rollover budgets, insurance optimization, and hands-free bill management.
 
 ---
 
-**Made with ❤️ for better financial tracking**
+## ✨ Features
 
-Start tracking your expenses smarter, not harder! 💰📊
+### 📊 Dashboard
+- Real-time overview of income vs expenses
+- Net balance calculation
+- Category-wise spending visualization
+- Budget progress bars with color-coded alerts
+
+### 💸 Expense Tracking
+- Quick expense entry with categories
+- Date-based organization
+- Link expenses to insurance deductibles
+- Mark recurring expenses
+- Categories: Food, Transport, Shopping, Bills, Entertainment, Health, Other
+
+### 🎯 Smart Budgeting with Rollover
+- Set monthly budgets per category
+- **Rollover budgets**: Carry unused budget to next month
+- Enable/disable rollover per category
+- Visual progress tracking
+- Color-coded alerts (green/yellow/red)
+- Real-time budget vs actual spending
+- Rewards disciplined spending
+
+**Rollover Example:**
+```
+February Food Budget: $600
+Spent: $400
+Saved: $200
+
+March Food Budget: $600 + $200 (rollover) = $800 total available
+```
+
+### 🔄 Recurring Transactions
+- **Auto-create monthly bills** on specific days
+- Set up once, creates automatically every month
+- Works for both expenses AND income
+- Choose specific day of month (1-28)
+- Toggle active/paused status
+- Prevents duplicate entries with smart tracking
+
+**Perfect for:**
+- Rent/Mortgage payments
+- Subscriptions (Netflix, Spotify, etc.)
+- Monthly salary income
+- Insurance premiums
+- Utility bills
+
+### 🛡️ Insurance Deductible Tracking
+- Track multiple insurance deductibles (Health, Auto, Home, etc.)
+- Visual progress bars showing deductible completion
+- Automatically apply medical expenses to deductibles
+- Alerts when close to meeting deductible
+- Strategic planning for maximum insurance benefits
+
+**Use Cases:**
+- Know when you've met your annual health insurance deductible
+- Plan expensive medical procedures after deductible is met
+- Track auto insurance deductible progress after accidents
+- Maximize benefits in the same calendar year
+
+### 💰 Income Tracking
+- Track multiple income sources
+- Salary, freelance, gifts, and more
+- Monthly income summaries
+
+---
+
+## 🛠️ Installation & Setup
+
+### Option 1: Direct Browser Use
+1. Download `index.html`
+2. Open in any modern web browser
+3. Start tracking! (Data saves automatically)
+
+### Option 2: Install as PWA (Progressive Web App)
+1. Open the app in Chrome/Edge/Safari
+2. Click the install icon in the address bar
+3. App installs on your device
+4. Works offline after installation
+
+### Option 3: Deploy to GitHub Pages
+1. Create a new GitHub repository
+2. Upload these files:
+   - `index.html`
+   - `manifest.json`
+   - `sw.js`
+3. Enable GitHub Pages in repository settings
+4. Access from anywhere!
+
+---
+
+## 📱 How to Use
+
+### Adding Your First Expense
+1. Click **"Expenses"** tab
+2. Click **"+ Add Expense"**
+3. Fill in:
+   - Amount
+   - Category
+   - Description
+   - Date
+4. Optional: Apply to insurance deductible
+5. Click **"Add Expense"**
+
+### Setting Up Budgets with Rollover
+1. Click **"Budgets"** tab
+2. Click **"+ Set Budget"**
+3. Choose category
+4. Enter monthly amount
+5. ✅ Check **"Enable Rollover"** to carry unused budget forward
+6. Click **"Set Budget"**
+
+### Creating Recurring Transactions
+1. Click **"Recurring"** tab
+2. Click **"+ Add Recurring"**
+3. Set up:
+   - Type (Expense or Income)
+   - Amount
+   - Category
+   - Description (e.g., "Rent", "Netflix", "Salary")
+   - Day of month (1-28)
+4. Click **"Add Recurring Transaction"**
+
+**The app will automatically create this transaction on the specified day each month!**
+
+### Tracking Insurance Deductibles
+1. Click **"Insurance"** tab
+2. Click **"+ Add Deductible"**
+3. Enter:
+   - Insurance name (e.g., "Health Insurance 2026")
+   - Total deductible amount
+   - Year
+4. When adding medical expenses:
+   - ✅ Check "Apply to insurance deductible"
+   - Select which deductible
+   - Amount automatically counts toward deductible
+
+---
+
+## 💡 Pro Tips
+
+### Rollover Budgets
+- **Enable for irregular categories**: Shopping, Entertainment, Gifts
+- **Disable for fixed costs**: Rent, Bills, Insurance
+- Build up a buffer for big purchases over 2-3 months
+
+### Insurance Deductibles
+- Track all medical expenses through the app
+- Watch for the alert when you're close to meeting deductible
+- Schedule elective procedures after deductible is met
+- Maximize benefits in the same calendar year
+
+### Recurring Transactions
+- Set up ALL your regular bills upfront
+- Review the "Recurring" tab monthly
+- Pause subscriptions you're not using
+- Use day 1-5 for most bills to stay organized
+
+### Budget Strategy
+```
+Category          Budget    Rollover?   Why
+────────────────────────────────────────────────
+Rent              $1,650    ❌          Fixed cost
+Food              $600      ✅          Flexible, can save
+Transport         $200      ✅          Varies monthly
+Shopping          $300      ✅          Save for big purchase
+Bills             $150      ❌          Fixed utilities
+Entertainment     $200      ✅          Splurge some months
+Health            $100      ✅          Varies with needs
+```
+
+---
+
+## 🔒 Privacy & Data
+
+### Local Storage
+- **All data stored in your browser only**
+- Nothing sent to any server
+- Completely private
+- No account required
+
+### Data Persistence
+- Data saves automatically after each action
+- Survives browser restarts
+- Cleared only if you clear browser data
+
+### Backup Your Data
+To backup manually:
+1. Open browser console (F12)
+2. Go to "Application" tab
+3. Click "Local Storage"
+4. Copy the data
+5. Save to a text file
+
+To restore:
+1. Open console
+2. Paste data back into Local Storage
+3. Refresh page
+
+---
+
+## 🎯 Use Cases
+
+### For Students
+- Track allowance/income
+- Budget for textbooks and supplies
+- Manage part-time job earnings
+- Control dining and entertainment
+
+### For Working Professionals
+- Salary tracking with tax withholdings
+- Rollover budgets for vacation savings
+- Insurance deductible optimization
+- Automate recurring bills
+
+### For Freelancers
+- Multiple income streams
+- Variable monthly expenses
+- Tax-deductible expense tracking
+- Project-based budgeting
+
+### For Families
+- Combined household budgeting
+- Track medical expenses against deductibles
+- Plan for large purchases with rollover
+- Monitor subscription costs
+
+---
+
+## 📊 Example Workflow
+
+### Monthly Routine (5 minutes)
+1. **Start of Month:**
+   - Check Dashboard for rollover amounts
+   - Review Budget tab for available funds
+   - Verify Recurring transactions processed
+
+2. **During Month:**
+   - Add expenses as they happen
+   - Check budget progress weekly
+   - Update insurance deductibles for medical expenses
+
+3. **End of Month:**
+   - Review Dashboard for spending patterns
+   - Check which budgets had rollover
+   - Adjust next month's budgets if needed
+
+## 🔧 Technical Details
+
+### Technologies Used
+- **React 18** - UI framework
+- **Tailwind CSS** - Styling
+- **LocalStorage API** - Data persistence
+- **Service Worker** - Offline support (PWA)
+- **Vanilla JavaScript** - No build tools needed
+
+### Browser Compatibility
+- ✅ Chrome 90+
+- ✅ Firefox 88+
+- ✅ Safari 14+
+- ✅ Edge 90+
+- ✅ Mobile browsers (iOS Safari, Chrome Mobile)
+
+### File Structure
+```
+expense-tracker/
+├── index.html          # Main app file (complete React app)
+├── manifest.json       # PWA manifest for installable app
+├── sw.js              # Service worker for offline support
+└── README.md          # Documentation (this file)
+```
+
+---
+
+## 🚨 Important Notes
+
+### Recurring Transactions
+- Only processes on the specified day of month
+- Checks once per day (won't create duplicates)
+- Day 29-31 not supported (use day 28 for end of month)
+- Can pause temporarily without deleting
+
+### Rollover Budgets
+- Calculated at the start of each new month
+- Only carries forward if budget > spending
+- Doesn't roll backwards (can't go negative)
+- Each category independent
+
+### Insurance Deductibles
+- Manual expense linking required
+- Progress doesn't auto-reset yearly
+- Create new deductible entry each year
+- Multiple deductibles can be active
+
+---
+
+## 📈 Potential Future Enhancements
+(Ideas for possible additions)
+
+- 📊 Advanced charts and analytics
+- 💱 Multi-currency support
+- 📤 Export to CSV/Excel
+- 🏷️ Custom tags for expenses
+- 🎯 Savings goals tracker
+- 📸 Receipt photo storage
+- 🔔 Budget alerts via notifications
+- 👥 Shared budgets (family mode)
+
+---
+
+## ❓ FAQ
+
+**Q: Is my data secure?**
+A: Yes! All data is stored locally in your browser only. Nothing is sent to any server.
+
+**Q: How do I enable rollover for existing budgets?**
+A: Go to Budgets → Click "+ Set Budget" → Select the same category → Enable rollover → Save
+
+**Q: Can I have both rollover and non-rollover categories?**
+A: Yes! Each category can have rollover enabled or disabled independently.
+
+**Q: What happens if I delete a recurring transaction?**
+A: It stops creating future entries. Past entries remain in your expense/income history.
+
+**Q: Can I edit past expenses that were auto-created?**
+A: Not directly in this version. You'll need to delete and re-add manually.
+
+**Q: How do I reset my insurance deductible for a new year?**
+A: Create a new deductible entry with the new year. The old one remains for historical tracking.
+
+**Q: Does this work offline?**
+A: Yes! If installed as PWA. The app and all your data work completely offline.
+
+**Q: Can I use this on multiple devices?**
+A: Each device stores data separately. For multi-device sync, deploy to GitHub Pages and use the same URL.
+
+---
+
+## 🐛 Troubleshooting
+
+### Data not saving
+1. Check browser privacy settings
+2. Ensure LocalStorage is enabled
+3. Try a different browser
+4. Clear cache and reload
+
+### Recurring transactions not creating
+1. Check the day of month setting
+2. Verify transaction is "Active"
+3. Wait until the specified day
+4. Check browser console for errors
+
+### Rollover not calculating
+1. Wait for month to change
+2. Ensure rollover is enabled for category
+3. Check that previous month had unused budget
+4. Refresh the page
+
+---
+
+## 📄 License
+
+MIT License - Free to use, modify, and distribute.
+
+---
+
+## 🙏 About
+
+Built for comprehensive personal finance management with focus on:
+- Smart budgeting with rollover support
+- Tax withholding tracking (per paycheck, not quarterly)
+- Debt management (0% APR tracking)
+- Insurance deductible optimization
+- Automation through recurring transactions
+- Complete privacy with local-only data storage
+
+**Last Updated:** February 2026  
+**Compatibility:** All modern browsers
+
+---
+
+## 📞 Support
+
+Having issues or questions?
+- Check the FAQ above
+- Review the "How to Use" section
+- Inspect browser console for errors (F12)
+- Try clearing browser cache
+
+---
+
+**Happy tracking! 💰📊**
