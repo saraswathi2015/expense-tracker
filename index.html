@@ -2,1620 +2,982 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0F172A">
-    <meta name="description" content="Smart expense tracker with bill scanning, budget tracking, and debt payoff planning">
-    <title>ExpenseFlow - Your Financial Command Center</title>
-    <link rel="manifest" href="manifest.json">
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker v2.0</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * {
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        :root {
-            --bg-primary: #0F172A;
-            --bg-secondary: #1E293B;
-            --bg-tertiary: #334155;
-            --text-primary: #F1F5F9;
-            --text-secondary: #94A3B8;
-            --text-muted: #64748B;
-            --accent-green: #10B981;
-            --accent-red: #EF4444;
-            --accent-amber: #F59E0B;
-            --accent-blue: #3B82F6;
-            --border-color: #334155;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-        }
-
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.6;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        .app-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding-bottom: 80px;
-            min-height: 100vh;
-        }
-
-        /* Header */
-        .header {
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-color);
-            padding: 1rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            backdrop-filter: blur(10px);
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--accent-green);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 0.75rem;
-        }
-
-        .icon-btn {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 1.25rem;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 8px;
-            transition: all 0.2s;
-        }
-
-        .icon-btn:hover, .icon-btn:active {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-
-        /* Content */
-        .content {
-            padding: 1rem;
-        }
-
-        .screen {
-            display: none;
-            animation: fadeIn 0.3s;
-        }
-
-        .screen.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Cards */
-        .card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1.25rem;
-            margin-bottom: 1rem;
-        }
-
-        .card-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        /* Summary Cards */
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .summary-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1rem;
-            text-align: center;
-        }
-
-        .summary-value {
-            font-size: 1.75rem;
-            font-weight: 700;
-            font-family: 'JetBrains Mono', monospace;
-            margin-bottom: 0.25rem;
-        }
-
-        .summary-value.positive { color: var(--accent-green); }
-        .summary-value.negative { color: var(--accent-red); }
-        .summary-value.neutral { color: var(--text-primary); }
-
-        .summary-label {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        /* Quick Actions */
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .action-btn {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1rem 0.75rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: var(--text-primary);
-            text-decoration: none;
-        }
-
-        .action-btn:hover, .action-btn:active {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-            border-color: var(--accent-green);
-        }
-
-        .action-icon {
-            font-size: 1.75rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .action-label {
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        /* List Items */
-        .list-item {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .list-item:hover, .list-item:active {
-            border-color: var(--accent-green);
-            transform: translateX(4px);
-        }
-
-        .list-icon {
-            font-size: 1.5rem;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--bg-secondary);
-            border-radius: 8px;
-            flex-shrink: 0;
-        }
-
-        .list-content {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .list-title {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .list-subtitle {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        .list-value {
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 600;
-            font-size: 1.125rem;
-            white-space: nowrap;
-        }
-
-        /* Progress Bar */
-        .progress-wrapper {
-            margin: 0.75rem 0;
-        }
-
-        .progress-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .progress-bar {
-            height: 8px;
-            background: var(--bg-primary);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--accent-green);
-            transition: width 0.3s;
-            border-radius: 4px;
-        }
-
-        .progress-fill.warning {
-            background: var(--accent-amber);
-        }
-
-        .progress-fill.danger {
-            background: var(--accent-red);
-        }
-
-        /* Forms */
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .form-input, .form-select, .form-textarea {
-            width: 100%;
-            padding: 0.75rem;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-primary);
-            font-family: inherit;
-            font-size: 1rem;
-            transition: all 0.2s;
-        }
-
-        .form-input:focus, .form-select:focus, .form-textarea:focus {
-            outline: none;
-            border-color: var(--accent-green);
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-        }
-
-        .form-textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        /* Buttons */
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: inherit;
-            font-size: 1rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .btn-primary {
-            background: var(--accent-green);
-            color: white;
-        }
-
-        .btn-primary:hover, .btn-primary:active {
-            background: #059669;
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-        }
-
-        .btn-secondary {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-        }
-
-        .btn-secondary:hover, .btn-secondary:active {
-            background: var(--bg-secondary);
-        }
-
-        .btn-danger {
-            background: var(--accent-red);
-            color: white;
-        }
-
-        .btn-full {
-            width: 100%;
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-            backdrop-filter: blur(4px);
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            max-width: 600px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            padding: 1.5rem;
-            animation: slideUp 0.3s;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 0;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            transition: all 0.2s;
-        }
-
-        .modal-close:hover {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-
-        /* Bottom Navigation */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--bg-secondary);
-            border-top: 1px solid var(--border-color);
-            padding: 0.5rem;
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 0.25rem;
-            z-index: 100;
-            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.3);
-        }
-
-        .nav-item {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            padding: 0.5rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.25rem;
-            font-size: 0.7rem;
-            transition: color 0.2s;
-            border-radius: 8px;
-        }
-
-        .nav-item.active {
-            color: var(--accent-green);
-            background: rgba(16, 185, 129, 0.1);
-        }
-
-        .nav-icon {
-            font-size: 1.25rem;
-        }
-
-        /* Alert */
-        .alert {
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: flex-start;
-            gap: 0.75rem;
-            animation: slideDown 0.3s;
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .alert-success {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid var(--accent-green);
-            color: var(--accent-green);
-        }
-
-        .alert-warning {
-            background: rgba(245, 158, 11, 0.1);
-            border: 1px solid var(--accent-amber);
-            color: var(--accent-amber);
-        }
-
-        .alert-error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid var(--accent-red);
-            color: var(--accent-red);
-        }
-
-        .alert-info {
-            background: rgba(59, 130, 246, 0.1);
-            border: 1px solid var(--accent-blue);
-            color: var(--accent-blue);
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1.5rem;
-            color: var(--text-secondary);
-        }
-
-        .empty-icon {
-            font-size: 3rem;
-            opacity: 0.3;
-            margin-bottom: 1rem;
-        }
-
-        .empty-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--text-primary);
-        }
-
-        /* Debt Specific Styles */
-        .debt-countdown {
-            background: linear-gradient(135deg, var(--accent-red), #DC2626);
-            color: white;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 0.75rem;
-        }
-
-        .debt-countdown.promo {
-            background: linear-gradient(135deg, var(--accent-amber), #D97706);
-        }
-
-        .debt-countdown.safe {
-            background: linear-gradient(135deg, var(--accent-green), #059669);
-        }
-
-        .countdown-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .countdown-title {
-            font-weight: 600;
-        }
-
-        .countdown-badge {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .countdown-time {
-            font-size: 1.5rem;
-            font-weight: 700;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .countdown-label {
-            font-size: 0.875rem;
-            opacity: 0.9;
-        }
-
-        /* Charts Container */
-        .chart-container {
-            position: relative;
-            height: 250px;
-            margin: 1rem 0;
-        }
-
-        /* Category Colors */
-        .cat-food { color: #EF4444; }
-        .cat-transport { color: #3B82F6; }
-        .cat-shopping { color: #F59E0B; }
-        .cat-bills { color: #10B981; }
-        .cat-entertainment { color: #A855F7; }
-        .cat-health { color: #EC4899; }
-        .cat-housing { color: #8B5CF6; }
-        .cat-insurance { color: #06B6D4; }
-        .cat-education { color: #F97316; }
-        .cat-family { color: #14B8A6; }
-        .cat-other { color: #64748B; }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .summary-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .quick-actions {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        @media (max-width: 480px) {
-            .logo {
-                font-size: 1rem;
-            }
-
-            .summary-value {
-                font-size: 1.5rem;
-            }
-
-            .action-icon {
-                font-size: 1.5rem;
-            }
-
-            .action-label {
-                font-size: 0.75rem;
-            }
-        }
-
-        /* Loading */
-        .loading {
-            text-align: center;
-            padding: 2rem;
-            color: var(--text-secondary);
-        }
-
-        .spinner {
-            border: 3px solid var(--bg-tertiary);
-            border-top-color: var(--accent-green);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Notification Toast */
-        .toast {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            max-width: 350px;
-            z-index: 10000;
-            animation: slideInRight 0.3s;
-        }
-
-        @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(100%); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        /* Toggle Switch */
-        .toggle-switch {
-            position: relative;
-            width: 50px;
-            height: 28px;
-            background: var(--bg-tertiary);
-            border-radius: 14px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .toggle-switch.active {
-            background: var(--accent-green);
-        }
-
-        .toggle-slider {
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 22px;
-            height: 22px;
-            background: white;
-            border-radius: 50%;
-            transition: transform 0.3s;
-        }
-
-        .toggle-switch.active .toggle-slider {
-            transform: translateX(22px);
         }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <h1 class="logo">EXPENSEFLOW</h1>
-                <div class="header-actions">
-                    <button class="icon-btn" onclick="showNotifications()">🔔</button>
-                    <button class="icon-btn" onclick="switchScreen('settings')">⚙️</button>
-                </div>
-            </div>
-        </header>
+    <div id="root"></div>
 
-        <!-- Main Content -->
-        <main class="content">
-            <!-- Home Screen -->
-            <div class="screen active" id="home">
-                <!-- Summary -->
-                <div class="summary-grid">
-                    <div class="summary-card">
-                        <div class="summary-value neutral" id="homeIncome">$0</div>
-                        <div class="summary-label">Income</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-value negative" id="homeExpenses">$0</div>
-                        <div class="summary-label">Spent</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-value positive" id="homeSaved">$0</div>
-                        <div class="summary-label">Saved</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-value neutral" id="homeBudgetLeft">$0</div>
-                        <div class="summary-label">Budget Left</div>
-                    </div>
-                </div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-                <!-- Quick Actions -->
-                <div class="quick-actions">
-                    <button class="action-btn" onclick="showModal('addExpenseModal')">
-                        <div class="action-icon">➕</div>
-                        <div class="action-label">Add</div>
-                    </button>
-                    <button class="action-btn" onclick="showModal('scanBillModal')">
-                        <div class="action-icon">📸</div>
-                        <div class="action-label">Scan</div>
-                    </button>
-                    <button class="action-btn" onclick="showModal('parseSMSModal')">
-                        <div class="action-icon">💬</div>
-                        <div class="action-label">Parse</div>
-                    </button>
-                </div>
+        // Main App Component
+        function ExpenseTracker() {
+            const [expenses, setExpenses] = useState([]);
+            const [income, setIncome] = useState([]);
+            const [budgets, setBudgets] = useState({});
+            const [recurringTransactions, setRecurringTransactions] = useState([]);
+            const [insuranceDeductibles, setInsuranceDeductibles] = useState([]);
+            const [currentView, setCurrentView] = useState('dashboard');
+            const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7));
 
-                <!-- Debt Alerts -->
-                <div id="debtAlerts"></div>
+            // Load data from localStorage
+            useEffect(() => {
+                const savedExpenses = localStorage.getItem('expenses');
+                const savedIncome = localStorage.getItem('income');
+                const savedBudgets = localStorage.getItem('budgets');
+                const savedRecurring = localStorage.getItem('recurring');
+                const savedDeductibles = localStorage.getItem('deductibles');
 
-                <!-- Upcoming Bills -->
-                <div class="card">
-                    <div class="card-title">🔔 Next 7 Days</div>
-                    <div id="upcomingBills">
-                        <div class="empty-state">
-                            <div class="empty-icon">📅</div>
-                            <div>No upcoming bills</div>
-                        </div>
-                    </div>
-                </div>
+                if (savedExpenses) setExpenses(JSON.parse(savedExpenses));
+                if (savedIncome) setIncome(JSON.parse(savedIncome));
+                if (savedBudgets) setBudgets(JSON.parse(savedBudgets));
+                if (savedRecurring) setRecurringTransactions(JSON.parse(savedRecurring));
+                if (savedDeductibles) setInsuranceDeductibles(JSON.parse(savedDeductibles));
+            }, []);
 
-                <!-- Recent Expenses -->
-                <div class="card">
-                    <div class="card-title">📝 Recent</div>
-                    <div id="recentExpenses">
-                        <div class="empty-state">
-                            <div class="empty-icon">💰</div>
-                            <div class="empty-title">No expenses yet</div>
-                            <div>Start tracking by adding your first expense</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            // Save data to localStorage
+            useEffect(() => {
+                localStorage.setItem('expenses', JSON.stringify(expenses));
+            }, [expenses]);
 
-            <!-- Expenses Screen -->
-            <div class="screen" id="expenses">
-                <div class="card">
-                    <div class="card-title">💰 All Expenses</div>
-                    <div class="form-group">
-                        <select class="form-select" id="expenseFilter" onchange="filterExpenses()">
-                            <option value="current">This Month</option>
-                            <option value="last">Last Month</option>
-                            <option value="all">All Time</option>
-                        </select>
-                    </div>
-                    <div id="allExpenses"></div>
-                </div>
-            </div>
+            useEffect(() => {
+                localStorage.setItem('income', JSON.stringify(income));
+            }, [income]);
 
-            <!-- Budget & Goals Screen -->
-            <div class="screen" id="goals">
-                <!-- Budget Status -->
-                <div class="card">
-                    <div class="card-title">🎯 Budget Status</div>
-                    <div id="budgetStatus"></div>
-                    <button class="btn btn-primary btn-full" onclick="showModal('setBudgetModal')" style="margin-top: 1rem;">
-                        Set Budgets
-                    </button>
-                </div>
+            useEffect(() => {
+                localStorage.setItem('budgets', JSON.stringify(budgets));
+            }, [budgets]);
 
-                <!-- Savings Goals -->
-                <div class="card">
-                    <div class="card-title">💰 Savings Goals</div>
-                    <div id="savingsGoals"></div>
-                    <button class="btn btn-secondary btn-full" onclick="showModal('addGoalModal')" style="margin-top: 1rem;">
-                        Add Goal
-                    </button>
-                </div>
+            useEffect(() => {
+                localStorage.setItem('recurring', JSON.stringify(recurringTransactions));
+            }, [recurringTransactions]);
 
-                <!-- Debt Payoff -->
-                <div class="card">
-                    <div class="card-title">💳 Debt Payoff</div>
-                    <div id="debtSummary"></div>
-                    <button class="btn btn-secondary btn-full" onclick="showModal('addDebtModal')" style="margin-top: 1rem;">
-                        Add Debt
-                    </button>
-                </div>
-            </div>
+            useEffect(() => {
+                localStorage.setItem('deductibles', JSON.stringify(insuranceDeductibles));
+            }, [insuranceDeductibles]);
 
-            <!-- Wealth Screen -->
-            <div class="screen" id="wealth">
-                <div class="card">
-                    <div class="card-title">💎 Net Worth</div>
-                    <div class="summary-card" style="margin-bottom: 1.5rem;">
-                        <div class="summary-value neutral" id="netWorthValue">$0</div>
-                        <div class="summary-label">Total Net Worth</div>
-                    </div>
-                    <div id="wealthBreakdown"></div>
-                </div>
-
-                <div class="card">
-                    <div class="card-title">📈 Investments</div>
-                    <div id="investments"></div>
-                    <button class="btn btn-secondary btn-full" onclick="showModal('addInvestmentModal')" style="margin-top: 1rem;">
-                        Add Investment
-                    </button>
-                </div>
-            </div>
-
-            <!-- Settings Screen -->
-            <div class="screen" id="settings">
-                <div class="card">
-                    <div class="card-title">⚙️ Settings</div>
+            // Process recurring transactions at the start of each month
+            useEffect(() => {
+                const checkRecurring = () => {
+                    const today = new Date();
+                    const currentDay = today.getDate();
                     
-                    <div class="form-group">
-                        <label class="form-label">Currency</label>
-                        <select class="form-select" id="currencySelect" onchange="saveCurrency()">
-                            <option value="$">US Dollar ($)</option>
-                            <option value="₹">Indian Rupee (₹)</option>
-                            <option value="€">Euro (€)</option>
-                            <option value="£">British Pound (£)</option>
-                        </select>
-                    </div>
-                </div>
+                    recurringTransactions.forEach(recurring => {
+                        if (recurring.dayOfMonth === currentDay && recurring.active) {
+                            const lastProcessed = new Date(recurring.lastProcessed || 0);
+                            const daysSinceProcessed = (today - lastProcessed) / (1000 * 60 * 60 * 24);
+                            
+                            // Only process if it hasn't been processed this month
+                            if (daysSinceProcessed >= 28) {
+                                const newTransaction = {
+                                    id: Date.now() + Math.random(),
+                                    ...recurring,
+                                    date: today.toISOString().slice(0, 10),
+                                    isRecurring: true
+                                };
+                                
+                                if (recurring.type === 'expense') {
+                                    setExpenses(prev => [...prev, newTransaction]);
+                                } else {
+                                    setIncome(prev => [...prev, newTransaction]);
+                                }
+                                
+                                // Update last processed date
+                                setRecurringTransactions(prev => prev.map(r => 
+                                    r.id === recurring.id 
+                                        ? {...r, lastProcessed: today.toISOString()} 
+                                        : r
+                                ));
+                            }
+                        }
+                    });
+                };
+                
+                // Check on component mount and every day
+                checkRecurring();
+                const interval = setInterval(checkRecurring, 24 * 60 * 60 * 1000);
+                return () => clearInterval(interval);
+            }, [recurringTransactions]);
 
-                <div class="card">
-                    <div class="card-title">💾 Data Management</div>
-                    <button class="btn btn-secondary btn-full" onclick="exportData()" style="margin-bottom: 0.75rem;">
-                        Export Data (JSON)
-                    </button>
-                    <button class="btn btn-secondary btn-full" onclick="importData()" style="margin-bottom: 0.75rem;">
-                        Import Data
-                    </button>
-                    <button class="btn btn-danger btn-full" onclick="clearAllData()">
-                        Clear All Data
-                    </button>
-                </div>
-
-                <div class="card">
-                    <div class="card-title">ℹ️ About</div>
-                    <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">
-                        <strong>ExpenseFlow v1.0</strong>
-                    </p>
-                    <p style="color: var(--text-secondary); font-size: 0.875rem;">
-                        Your personal expense tracker with AI-powered bill scanning, smart debt payoff planning, and complete privacy. All data stored locally on your device.
-                    </p>
-                </div>
-            </div>
-        </main>
-
-        <!-- Bottom Navigation -->
-        <nav class="bottom-nav">
-            <button class="nav-item active" onclick="switchScreen('home')" data-screen="home">
-                <span class="nav-icon">🏠</span>
-                <span>Home</span>
-            </button>
-            <button class="nav-item" onclick="switchScreen('expenses')" data-screen="expenses">
-                <span class="nav-icon">💰</span>
-                <span>Expenses</span>
-            </button>
-            <button class="nav-item" onclick="switchScreen('goals')" data-screen="goals">
-                <span class="nav-icon">🎯</span>
-                <span>Goals</span>
-            </button>
-            <button class="nav-item" onclick="switchScreen('wealth')" data-screen="wealth">
-                <span class="nav-icon">📈</span>
-                <span>Wealth</span>
-            </button>
-            <button class="nav-item" onclick="switchScreen('settings')" data-screen="settings">
-                <span class="nav-icon">⚙️</span>
-                <span>More</span>
-            </button>
-        </nav>
-    </div>
-
-    <!-- Modals will be added here by JavaScript -->
-    <div id="modalContainer"></div>
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- Tesseract.js for OCR -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
-
-    <script>
-        // App State
-        let expenses = [];
-        let income = [];
-        let budgets = {};
-        let goals = [];
-        let debts = [];
-        let investments = [];
-        let bills = [];
-        let settings = {
-            currency: '$',
-            dateFormat: 'MM/DD/YYYY'
-        };
-
-        // Category Configuration
-        const categories = {
-            'Food': '🍔',
-            'Transport': '🚗',
-            'Shopping': '🛍️',
-            'Bills': '💡',
-            'Entertainment': '🎬',
-            'Health': '💊',
-            'Housing': '🏠',
-            'Insurance': '🛡️',
-            'Education': '🎓',
-            'Family': '👨‍👩‍👧',
-            'Other': '📦'
-        };
-
-        // Initialize App
-        document.addEventListener('DOMContentLoaded', function() {
-            loadData();
-            setupModals();
-            updateDashboard();
-            renderExpenses();
-            renderBudgets();
-            renderGoals();
-            renderDebts();
-            renderWealth();
-            checkDebtAlerts();
-            renderUpcomingBills();
-        });
-
-        // Navigation
-        function switchScreen(screenName) {
-            // Hide all screens
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            
-            // Show selected screen
-            document.getElementById(screenName).classList.add('active');
-            
-            // Update nav items
-            document.querySelectorAll('.nav-item').forEach(item => {
-                if (item.dataset.screen === screenName || item.onclick.toString().includes(screenName)) {
-                    item.classList.add('active');
-                } else {
-                    item.classList.remove('active');
-                }
-            });
-
-            // Update screen-specific data
-            if (screenName === 'expenses') {
-                filterExpenses();
-            } else if (screenName === 'goals') {
-                renderBudgets();
-                renderGoals();
-                renderDebts();
-            } else if (screenName === 'wealth') {
-                renderWealth();
-            }
-        }
-
-        // Modal Management
-        function setupModals() {
-            const modalContainer = document.getElementById('modalContainer');
-            
-            // Add Expense Modal
-            modalContainer.innerHTML += `
-                <div class="modal" id="addExpenseModal">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h2 class="modal-title">Add Expense</h2>
-                            <button class="modal-close" onclick="hideModal('addExpenseModal')">✕</button>
-                        </div>
-                        <form id="addExpenseForm" onsubmit="addExpense(event)">
-                            <div class="form-group">
-                                <label class="form-label">Amount</label>
-                                <input type="number" class="form-input" id="expenseAmount" required step="0.01" placeholder="0.00">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Description</label>
-                                <input type="text" class="form-input" id="expenseDescription" required placeholder="e.g., Grocery shopping">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Category</label>
-                                <select class="form-select" id="expenseCategory" required>
-                                    ${Object.keys(categories).map(cat => `<option value="${cat}">${categories[cat]} ${cat}</option>`).join('')}
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Date</label>
-                                <input type="date" class="form-input" id="expenseDate" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-full">Add Expense</button>
-                        </form>
-                    </div>
-                </div>
-            `;
-
-            // Similar modals for other functions...
-            // (Scan Bill, Parse SMS, Set Budget, Add Goal, Add Debt, etc.)
-            
-            // Set default date
-            document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
-        }
-
-        function showModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
-        }
-
-        function hideModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
-
-        // Data Management
-        function saveData() {
-            localStorage.setItem('expenses', JSON.stringify(expenses));
-            localStorage.setItem('income', JSON.stringify(income));
-            localStorage.setItem('budgets', JSON.stringify(budgets));
-            localStorage.setItem('goals', JSON.stringify(goals));
-            localStorage.setItem('debts', JSON.stringify(debts));
-            localStorage.setItem('investments', JSON.stringify(investments));
-            localStorage.setItem('bills', JSON.stringify(bills));
-            localStorage.setItem('settings', JSON.stringify(settings));
-        }
-
-        function loadData() {
-            const savedExpenses = localStorage.getItem('expenses');
-            const savedIncome = localStorage.getItem('income');
-            const savedBudgets = localStorage.getItem('budgets');
-            const savedGoals = localStorage.getItem('goals');
-            const savedDebts = localStorage.getItem('debts');
-            const savedInvestments = localStorage.getItem('investments');
-            const savedBills = localStorage.getItem('bills');
-            const savedSettings = localStorage.getItem('settings');
-            
-            if (savedExpenses) expenses = JSON.parse(savedExpenses);
-            if (savedIncome) income = JSON.parse(savedIncome);
-            if (savedBudgets) budgets = JSON.parse(savedBudgets);
-            if (savedGoals) goals = JSON.parse(savedGoals);
-            if (savedDebts) debts = JSON.parse(savedDebts);
-            if (savedInvestments) investments = JSON.parse(savedInvestments);
-            if (savedBills) bills = JSON.parse(savedBills);
-            if (savedSettings) {
-                settings = JSON.parse(savedSettings);
-                document.getElementById('currencySelect').value = settings.currency;
-            }
-        }
-
-        // Core Functions
-        function addExpense(event) {
-            event.preventDefault();
-            
-            const expense = {
-                id: Date.now(),
-                amount: parseFloat(document.getElementById('expenseAmount').value),
-                description: document.getElementById('expenseDescription').value,
-                category: document.getElementById('expenseCategory').value,
-                date: document.getElementById('expenseDate').value,
-                timestamp: new Date().toISOString()
+            const addExpense = (expense) => {
+                setExpenses([...expenses, { ...expense, id: Date.now() }]);
             };
 
-            expenses.push(expense);
-            saveData();
-            
-            document.getElementById('addExpenseForm').reset();
-            document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
-            
-            hideModal('addExpenseModal');
-            updateDashboard();
-            renderExpenses();
-            
-            showToast('Expense added successfully!', 'success');
+            const addIncome = (inc) => {
+                setIncome([...income, { ...inc, id: Date.now() }]);
+            };
+
+            const addRecurring = (recurring) => {
+                setRecurringTransactions([...recurringTransactions, { ...recurring, id: Date.now(), active: true }]);
+            };
+
+            const addDeductible = (deductible) => {
+                setInsuranceDeductibles([...insuranceDeductibles, { ...deductible, id: Date.now(), currentAmount: 0 }]);
+            };
+
+            const updateDeductibleProgress = (id, amount) => {
+                setInsuranceDeductibles(prev => prev.map(d => 
+                    d.id === id 
+                        ? {...d, currentAmount: Math.min(d.currentAmount + amount, d.totalAmount)} 
+                        : d
+                ));
+            };
+
+            return (
+                <div className="min-h-screen bg-gray-50">
+                    <Navigation currentView={currentView} setCurrentView={setCurrentView} />
+                    
+                    <div className="container mx-auto px-4 py-8">
+                        {currentView === 'dashboard' && (
+                            <Dashboard 
+                                expenses={expenses} 
+                                income={income} 
+                                budgets={budgets}
+                                currentMonth={currentMonth}
+                            />
+                        )}
+                        
+                        {currentView === 'expenses' && (
+                            <ExpenseManager 
+                                expenses={expenses}
+                                addExpense={addExpense}
+                                insuranceDeductibles={insuranceDeductibles}
+                                updateDeductibleProgress={updateDeductibleProgress}
+                            />
+                        )}
+                        
+                        {currentView === 'budgets' && (
+                            <BudgetManager 
+                                budgets={budgets}
+                                setBudgets={setBudgets}
+                                expenses={expenses}
+                                currentMonth={currentMonth}
+                            />
+                        )}
+                        
+                        {currentView === 'recurring' && (
+                            <RecurringManager 
+                                recurring={recurringTransactions}
+                                addRecurring={addRecurring}
+                                setRecurringTransactions={setRecurringTransactions}
+                            />
+                        )}
+                        
+                        {currentView === 'insurance' && (
+                            <InsuranceManager 
+                                deductibles={insuranceDeductibles}
+                                addDeductible={addDeductible}
+                                setInsuranceDeductibles={setInsuranceDeductibles}
+                            />
+                        )}
+                    </div>
+                </div>
+            );
         }
 
-        function updateDashboard() {
-            const currentMonth = new Date().toISOString().slice(0, 7);
+        // Navigation Component
+        function Navigation({ currentView, setCurrentView }) {
+            const menuItems = [
+                { id: 'dashboard', label: '📊 Dashboard', icon: '📊' },
+                { id: 'expenses', label: '💰 Expenses', icon: '💰' },
+                { id: 'budgets', label: '🎯 Budgets', icon: '🎯' },
+                { id: 'recurring', label: '🔄 Recurring', icon: '🔄' },
+                { id: 'insurance', label: '🛡️ Insurance', icon: '🛡️' }
+            ];
+
+            return (
+                <nav className="bg-blue-600 text-white shadow-lg">
+                    <div className="container mx-auto px-4">
+                        <div className="flex justify-between items-center py-4">
+                            <h1 className="text-2xl font-bold">Expense Tracker v2.0</h1>
+                            <div className="hidden md:flex space-x-4">
+                                {menuItems.map(item => (
+                                    <button
+                                        key={item.id}
+                                        onClick={() => setCurrentView(item.id)}
+                                        className={`px-4 py-2 rounded ${
+                                            currentView === item.id 
+                                                ? 'bg-blue-700' 
+                                                : 'hover:bg-blue-500'
+                                        }`}
+                                    >
+                                        {item.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="md:hidden pb-4">
+                            <select 
+                                value={currentView}
+                                onChange={(e) => setCurrentView(e.target.value)}
+                                className="w-full px-4 py-2 rounded text-gray-800"
+                            >
+                                {menuItems.map(item => (
+                                    <option key={item.id} value={item.id}>{item.label}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                </nav>
+            );
+        }
+
+        // Dashboard Component
+        function Dashboard({ expenses, income, budgets, currentMonth }) {
+            const categories = ['Food', 'Transport', 'Shopping', 'Bills', 'Entertainment', 'Health', 'Other'];
+            
             const monthExpenses = expenses.filter(e => e.date.startsWith(currentMonth));
             const monthIncome = income.filter(i => i.date.startsWith(currentMonth));
             
-            const totalExpenses = monthExpenses.reduce((sum, e) => sum + e.amount, 0);
-            const totalIncome = monthIncome.reduce((sum, i) => sum + i.netAmount, 0);
-            const totalSaved = totalIncome - totalExpenses;
+            const totalExpenses = monthExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+            const totalIncome = monthIncome.reduce((sum, i) => sum + parseFloat(i.amount), 0);
             
-            const totalBudget = Object.values(budgets).reduce((sum, b) => sum + b, 0);
-            const budgetLeft = totalBudget - totalExpenses;
-            
-            document.getElementById('homeIncome').textContent = `${settings.currency}${totalIncome.toFixed(0)}`;
-            document.getElementById('homeExpenses').textContent = `${settings.currency}${totalExpenses.toFixed(0)}`;
-            document.getElementById('homeSaved').textContent = `${settings.currency}${totalSaved.toFixed(0)}`;
-            document.getElementById('homeBudgetLeft').textContent = `${settings.currency}${Math.max(0, budgetLeft).toFixed(0)}`;
-        }
+            const categoryTotals = categories.reduce((acc, cat) => {
+                acc[cat] = monthExpenses
+                    .filter(e => e.category === cat)
+                    .reduce((sum, e) => sum + parseFloat(e.amount), 0);
+                return acc;
+            }, {});
 
-        function renderExpenses() {
-            const recentContainer = document.getElementById('recentExpenses');
-            
-            if (expenses.length === 0) {
-                recentContainer.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">💰</div>
-                        <div class="empty-title">No expenses yet</div>
-                        <div>Start tracking by adding your first expense</div>
-                    </div>
-                `;
-                return;
-            }
-
-            const recent = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
-            
-            recentContainer.innerHTML = recent.map(expense => `
-                <div class="list-item" onclick="deleteExpense(${expense.id})">
-                    <div class="list-icon">${categories[expense.category] || '📦'}</div>
-                    <div class="list-content">
-                        <div class="list-title">${expense.description}</div>
-                        <div class="list-subtitle">${new Date(expense.date).toLocaleDateString()} • ${expense.category}</div>
-                    </div>
-                    <div class="list-value" style="color: var(--accent-red);">-${settings.currency}${expense.amount.toFixed(2)}</div>
-                </div>
-            `).join('');
-        }
-
-        function filterExpenses() {
-            const filter = document.getElementById('expenseFilter').value;
-            const container = document.getElementById('allExpenses');
-            
-            let filtered = [...expenses];
-            const now = new Date();
-            const currentMonth = now.toISOString().slice(0, 7);
-            const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1).toISOString().slice(0, 7);
-            
-            if (filter === 'current') {
-                filtered = filtered.filter(e => e.date.startsWith(currentMonth));
-            } else if (filter === 'last') {
-                filtered = filtered.filter(e => e.date.startsWith(lastMonth));
-            }
-            
-            filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">📝</div>
-                        <div>No expenses found</div>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = filtered.map(expense => `
-                <div class="list-item" onclick="deleteExpense(${expense.id})">
-                    <div class="list-icon">${categories[expense.category] || '📦'}</div>
-                    <div class="list-content">
-                        <div class="list-title">${expense.description}</div>
-                        <div class="list-subtitle">${new Date(expense.date).toLocaleDateString()} • ${expense.category}</div>
-                    </div>
-                    <div class="list-value" style="color: var(--accent-red);">-${settings.currency}${expense.amount.toFixed(2)}</div>
-                </div>
-            `).join('');
-        }
-
-        function deleteExpense(id) {
-            if (confirm('Delete this expense?')) {
-                expenses = expenses.filter(e => e.id !== id);
-                saveData();
-                updateDashboard();
-                renderExpenses();
-                filterExpenses();
-                showToast('Expense deleted', 'success');
-            }
-        }
-
-        function renderBudgets() {
-            const container = document.getElementById('budgetStatus');
-            
-            if (Object.keys(budgets).length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">🎯</div>
-                        <div>No budgets set</div>
-                    </div>
-                `;
-                return;
-            }
-
-            const currentMonth = new Date().toISOString().slice(0, 7);
-            const monthExpenses = expenses.filter(e => e.date.startsWith(currentMonth));
-            
-            let html = '';
-            
-            for (const [category, budget] of Object.entries(budgets)) {
-                if (budget === 0) continue;
-                
-                const spent = monthExpenses
-                    .filter(e => e.category === category)
-                    .reduce((sum, e) => sum + e.amount, 0);
-                
-                const percentage = (spent / budget) * 100;
-                const remaining = budget - spent;
-                
-                let progressClass = '';
-                if (percentage >= 100) progressClass = 'danger';
-                else if (percentage >= 80) progressClass = 'warning';
-                
-                html += `
-                    <div class="progress-wrapper">
-                        <div class="progress-info">
-                            <span>${categories[category]} ${category}</span>
-                            <span>${settings.currency}${spent.toFixed(0)} / ${settings.currency}${budget.toFixed(0)}</span>
+            return (
+                <div className="space-y-6">
+                    <h2 className="text-3xl font-bold text-gray-800">Dashboard</h2>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-white p-6 rounded-lg shadow">
+                            <h3 className="text-gray-500 text-sm">Total Income</h3>
+                            <p className="text-3xl font-bold text-green-600">${totalIncome.toFixed(2)}</p>
                         </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill ${progressClass}" style="width: ${Math.min(percentage, 100)}%"></div>
+                        <div className="bg-white p-6 rounded-lg shadow">
+                            <h3 className="text-gray-500 text-sm">Total Expenses</h3>
+                            <p className="text-3xl font-bold text-red-600">${totalExpenses.toFixed(2)}</p>
                         </div>
-                        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                            ${remaining > 0 ? `${settings.currency}${remaining.toFixed(0)} left` : `${settings.currency}${Math.abs(remaining).toFixed(0)} over`}
-                            (${percentage.toFixed(0)}%)
+                        <div className="bg-white p-6 rounded-lg shadow">
+                            <h3 className="text-gray-500 text-sm">Net Balance</h3>
+                            <p className={`text-3xl font-bold ${totalIncome - totalExpenses >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                ${(totalIncome - totalExpenses).toFixed(2)}
+                            </p>
                         </div>
                     </div>
-                `;
-            }
-            
-            container.innerHTML = html;
-        }
 
-        function renderGoals() {
-            const container = document.getElementById('savingsGoals');
-            
-            if (goals.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">💰</div>
-                        <div>No savings goals set</div>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = goals.map(goal => {
-                const percentage = (goal.current / goal.target) * 100;
-                
-                return `
-                    <div class="progress-wrapper">
-                        <div class="progress-info">
-                            <span>${goal.name}</span>
-                            <span>${settings.currency}${goal.current.toFixed(0)} / ${settings.currency}${goal.target.toFixed(0)}</span>
+                    <div className="bg-white p-6 rounded-lg shadow">
+                        <h3 className="text-xl font-bold mb-4">Spending by Category</h3>
+                        <div className="space-y-3">
+                            {categories.map(cat => {
+                                const spent = categoryTotals[cat];
+                                const budget = budgets[cat]?.amount || 0;
+                                const percentage = budget > 0 ? (spent / budget) * 100 : 0;
+                                
+                                return (
+                                    <div key={cat} className="space-y-1">
+                                        <div className="flex justify-between">
+                                            <span className="font-medium">{cat}</span>
+                                            <span className="text-gray-600">
+                                                ${spent.toFixed(2)} / ${budget.toFixed(2)}
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-2">
+                                            <div 
+                                                className={`h-2 rounded-full ${
+                                                    percentage > 100 ? 'bg-red-500' : 
+                                                    percentage > 80 ? 'bg-yellow-500' : 'bg-green-500'
+                                                }`}
+                                                style={{ width: `${Math.min(percentage, 100)}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${Math.min(percentage, 100)}%"></div>
-                        </div>
-                        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                            ${percentage.toFixed(0)}% complete
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function renderDebts() {
-            const container = document.getElementById('debtSummary');
-            
-            if (debts.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">💳</div>
-                        <div>No debts tracked</div>
-                    </div>
-                `;
-                return;
-            }
-
-            const totalDebt = debts.reduce((sum, d) => sum + d.balance, 0);
-            const totalPaid = debts.reduce((sum, d) => sum + (d.originalBalance - d.balance), 0);
-            const totalOriginal = debts.reduce((sum, d) => sum + d.originalBalance, 0);
-            const percentage = ((totalOriginal - totalDebt) / totalOriginal) * 100;
-
-            let html = `
-                <div class="summary-card" style="margin-bottom: 1.5rem;">
-                    <div class="summary-value negative">${settings.currency}${totalDebt.toFixed(0)}</div>
-                    <div class="summary-label">Total Debt Remaining</div>
-                </div>
-                <div class="progress-wrapper">
-                    <div class="progress-info">
-                        <span>Overall Progress</span>
-                        <span>${percentage.toFixed(0)}% paid off</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${percentage}%"></div>
                     </div>
                 </div>
-            `;
+            );
+        }
 
-            // Sort debts by priority (0% APR expiring soon first)
-            const sortedDebts = [...debts].sort((a, b) => {
-                if (a.promoEndDate && b.promoEndDate) {
-                    return new Date(a.promoEndDate) - new Date(b.promoEndDate);
-                }
-                if (a.promoEndDate) return -1;
-                if (b.promoEndDate) return 1;
-                return b.apr - a.apr;
+        // Expense Manager Component
+        function ExpenseManager({ expenses, addExpense, insuranceDeductibles, updateDeductibleProgress }) {
+            const [showForm, setShowForm] = useState(false);
+            const [formData, setFormData] = useState({
+                amount: '',
+                category: 'Food',
+                description: '',
+                date: new Date().toISOString().slice(0, 10),
+                applyToDeductible: false,
+                deductibleId: ''
             });
 
-            html += sortedDebts.map(debt => {
-                const paidPercentage = ((debt.originalBalance - debt.balance) / debt.originalBalance) * 100;
-                
-                return `
-                    <div class="list-item" onclick="editDebt(${debt.id})">
-                        <div class="list-icon">💳</div>
-                        <div class="list-content">
-                            <div class="list-title">${debt.name}</div>
-                            <div class="list-subtitle">${debt.apr}% APR • ${settings.currency}${debt.minPayment}/mo minimum</div>
-                            <div class="progress-bar" style="margin-top: 0.5rem;">
-                                <div class="progress-fill" style="width: ${paidPercentage}%"></div>
-                            </div>
-                        </div>
-                        <div class="list-value" style="color: var(--accent-red);">${settings.currency}${debt.balance.toFixed(0)}</div>
-                    </div>
-                `;
-            }).join('');
+            const categories = ['Food', 'Transport', 'Shopping', 'Bills', 'Entertainment', 'Health', 'Other'];
 
-            container.innerHTML = html;
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                addExpense(formData);
+                
+                if (formData.applyToDeductible && formData.deductibleId) {
+                    updateDeductibleProgress(parseInt(formData.deductibleId), parseFloat(formData.amount));
+                }
+                
+                setFormData({
+                    amount: '',
+                    category: 'Food',
+                    description: '',
+                    date: new Date().toISOString().slice(0, 10),
+                    applyToDeductible: false,
+                    deductibleId: ''
+                });
+                setShowForm(false);
+            };
+
+            return (
+                <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                        <h2 className="text-3xl font-bold text-gray-800">Expenses</h2>
+                        <button
+                            onClick={() => setShowForm(!showForm)}
+                            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+                        >
+                            {showForm ? 'Cancel' : '+ Add Expense'}
+                        </button>
+                    </div>
+
+                    {showForm && (
+                        <div className="bg-white p-6 rounded-lg shadow">
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        required
+                                        value={formData.amount}
+                                        onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                                        className="w-full px-4 py-2 border rounded-lg"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                    <select
+                                        value={formData.category}
+                                        onChange={(e) => setFormData({...formData, category: e.target.value})}
+                                        className="w-full px-4 py-2 border rounded-lg"
+                                    >
+                                        {categories.map(cat => (
+                                            <option key={cat} value={cat}>{cat}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({...formData, description: e.target.value})}
+                                        className="w-full px-4 py-2 border rounded-lg"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                                    <input
+                                        type="date"
+                                        required
+                                        value={formData.date}
+                                        onChange={(e) => setFormData({...formData, date: e.target.value})}
+                                        className="w-full px-4 py-2 border rounded-lg"
+                                    />
+                                </div>
+                                
+                                {insuranceDeductibles.length > 0 && (
+                                    <div className="space-y-2">
+                                        <label className="flex items-center space-x-2">
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.applyToDeductible}
+                                                onChange={(e) => setFormData({...formData, applyToDeductible: e.target.checked})}
+                                                className="rounded"
+                                            />
+                                            <span className="text-sm font-medium text-gray-700">Apply to insurance deductible</span>
+                                        </label>
+                                        
+                                        {formData.applyToDeductible && (
+                                            <select
+                                                value={formData.deductibleId}
+                                                onChange={(e) => setFormData({...formData, deductibleId: e.target.value})}
+                                                className="w-full px-4 py-2 border rounded-lg"
+                                            >
+                                                <option value="">Select deductible</option>
+                                                {insuranceDeductibles.map(d => (
+                                                    <option key={d.id} value={d.id}>
+                                                        {d.name} (${d.currentAmount} / ${d.totalAmount})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        )}
+                                    </div>
+                                )}
+                                
+                                <button
+                                    type="submit"
+                                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                                >
+                                    Add Expense
+                                </button>
+                            </form>
+                        </div>
+                    )}
+
+                    <div className="bg-white rounded-lg shadow overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {expenses.slice().reverse().map(expense => (
+                                        <tr key={expense.id}>
+                                            <td className="px-6 py-4 text-sm text-gray-900">{expense.date}</td>
+                                            <td className="px-6 py-4 text-sm text-gray-900">{expense.category}</td>
+                                            <td className="px-6 py-4 text-sm text-gray-900">
+                                                {expense.description}
+                                                {expense.isRecurring && <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">🔄</span>}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-right font-medium text-red-600">
+                                                ${parseFloat(expense.amount).toFixed(2)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
         }
 
-        function checkDebtAlerts() {
-            const container = document.getElementById('debtAlerts');
-            
-            if (debts.length === 0) {
-                container.innerHTML = '';
-                return;
-            }
+        // Budget Manager Component (with Rollover feature)
+        function BudgetManager({ budgets, setBudgets, expenses, currentMonth }) {
+            const [showForm, setShowForm] = useState(false);
+            const [formData, setFormData] = useState({
+                category: 'Food',
+                amount: '',
+                enableRollover: false
+            });
 
-            const alerts = [];
-            const now = new Date();
+            const categories = ['Food', 'Transport', 'Shopping', 'Bills', 'Entertainment', 'Health', 'Other'];
 
-            debts.forEach(debt => {
-                if (debt.promoEndDate) {
-                    const endDate = new Date(debt.promoEndDate);
-                    const daysLeft = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
-                    const monthsLeft = Math.ceil(daysLeft / 30);
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                setBudgets({
+                    ...budgets,
+                    [formData.category]: {
+                        amount: parseFloat(formData.amount),
+                        enableRollover: formData.enableRollover,
+                        rolloverAmount: 0
+                    }
+                });
+                setFormData({ category: 'Food', amount: '', enableRollover: false });
+                setShowForm(false);
+            };
 
-                    if (daysLeft > 0 && daysLeft <= 90) {
-                        const monthlyPayment = debt.balance / monthsLeft;
+            // Calculate rollover amounts
+            useEffect(() => {
+                const prevMonth = new Date(currentMonth);
+                prevMonth.setMonth(prevMonth.getMonth() - 1);
+                const prevMonthStr = prevMonth.toISOString().slice(0, 7);
+
+                const prevMonthExpenses = expenses.filter(e => e.date.startsWith(prevMonthStr));
+
+                categories.forEach(cat => {
+                    if (budgets[cat]?.enableRollover) {
+                        const spent = prevMonthExpenses
+                            .filter(e => e.category === cat)
+                            .reduce((sum, e) => sum + parseFloat(e.amount), 0);
                         
-                        let alertClass = 'safe';
-                        if (daysLeft <= 30) alertClass = 'promo';
-                        if (daysLeft <= 90 && monthsLeft <= 3) alertClass = 'promo';
+                        const budgetAmount = budgets[cat].amount;
+                        const rollover = Math.max(0, budgetAmount - spent);
 
-                        alerts.push({
-                            html: `
-                                <div class="debt-countdown ${alertClass}">
-                                    <div class="countdown-header">
-                                        <span class="countdown-title">${debt.name}</span>
-                                        <span class="countdown-badge">0% APR</span>
-                                    </div>
-                                    <div class="countdown-time">${monthsLeft} months left</div>
-                                    <div class="countdown-label">0% ends ${endDate.toLocaleDateString()}</div>
-                                    <div class="countdown-label" style="margin-top: 0.5rem;">
-                                        💡 Pay ${settings.currency}${monthlyPayment.toFixed(0)}/mo to clear before ${debt.postPromoAPR}% APR kicks in
+                        if (rollover > 0 && rollover !== budgets[cat].rolloverAmount) {
+                            setBudgets(prev => ({
+                                ...prev,
+                                [cat]: {
+                                    ...prev[cat],
+                                    rolloverAmount: rollover
+                                }
+                            }));
+                        }
+                    }
+                });
+            }, [currentMonth, expenses, budgets, categories]);
+
+            const monthExpenses = expenses.filter(e => e.date.startsWith(currentMonth));
+
+            return (
+                <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                        <h2 className="text-3xl font-bold text-gray-800">Budgets</h2>
+                        <button
+                            onClick={() => setShowForm(!showForm)}
+                            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+                        >
+                            {showForm ? 'Cancel' : '+ Set Budget'}
+                        </button>
+                    </div>
+
+                    {showForm && (
+                        <div className="bg-white p-6 rounded-lg shadow">
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                    <select
+                                        value={formData.category}
+                                        onChange={(e) => setFormData({...formData, category: e.target.value})}
+                                        className="w-full px-4 py-2 border rounded-lg"
+                                    >
+                                        {categories.map(cat => (
+                                            <option key={cat} value={cat}>{cat}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Budget Amount</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        required
+                                        value={formData.amount}
+                                        onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                                        className="w-full px-4 py-2 border rounded-lg"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="flex items-center space-x-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.enableRollover}
+                                            onChange={(e) => setFormData({...formData, enableRollover: e.target.checked})}
+                                            className="rounded"
+                                        />
+                                        <span className="text-sm font-medium text-gray-700">
+                                            Enable Rollover (carry unused budget to next month)
+                                        </span>
+                                    </label>
+                                </div>
+                                <button
+                                    type="submit"
+                                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                                >
+                                    Set Budget
+                                </button>
+                            </form>
+                        </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {categories.map(cat => {
+                            const budget = budgets[cat];
+                            if (!budget) return null;
+
+                            const spent = monthExpenses
+                                .filter(e => e.category === cat)
+                                .reduce((sum, e) => sum + parseFloat(e.amount), 0);
+                            
+                            const totalBudget = budget.amount + (budget.rolloverAmount || 0);
+                            const percentage = (spent / totalBudget) * 100;
+
+                            return (
+                                <div key={cat} className="bg-white p-6 rounded-lg shadow">
+                                    <h3 className="text-lg font-bold mb-2">{cat}</h3>
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">Base Budget:</span>
+                                            <span className="font-medium">${budget.amount.toFixed(2)}</span>
+                                        </div>
+                                        {budget.enableRollover && budget.rolloverAmount > 0 && (
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-green-600">+ Rollover:</span>
+                                                <span className="font-medium text-green-600">
+                                                    ${budget.rolloverAmount.toFixed(2)}
+                                                </span>
+                                            </div>
+                                        )}
+                                        <div className="flex justify-between text-sm font-bold">
+                                            <span>Total Available:</span>
+                                            <span className="text-blue-600">${totalBudget.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">Spent:</span>
+                                            <span className="font-medium text-red-600">${spent.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm font-bold">
+                                            <span>Remaining:</span>
+                                            <span className={totalBudget - spent >= 0 ? 'text-green-600' : 'text-red-600'}>
+                                                ${(totalBudget - spent).toFixed(2)}
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-3 mt-3">
+                                            <div 
+                                                className={`h-3 rounded-full transition-all ${
+                                                    percentage > 100 ? 'bg-red-500' : 
+                                                    percentage > 80 ? 'bg-yellow-500' : 'bg-green-500'
+                                                }`}
+                                                style={{ width: `${Math.min(percentage, 100)}%` }}
+                                            />
+                                        </div>
+                                        <p className="text-xs text-gray-500 text-center mt-1">
+                                            {percentage.toFixed(1)}% used
+                                        </p>
+                                        {budget.enableRollover && (
+                                            <p className="text-xs text-blue-600 text-center mt-2">
+                                                🔄 Rollover enabled
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
-                            `,
-                            priority: daysLeft
-                        });
-                    }
-                }
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        }
+
+        // Recurring Manager Component
+        function RecurringManager({ recurring, addRecurring, setRecurringTransactions }) {
+            const [showForm, setShowForm] = useState(false);
+            const [formData, setFormData] = useState({
+                type: 'expense',
+                amount: '',
+                category: 'Bills',
+                description: '',
+                dayOfMonth: '1'
             });
 
-            alerts.sort((a, b) => a.priority - b.priority);
-            container.innerHTML = alerts.map(a => a.html).join('');
-        }
+            const categories = ['Food', 'Transport', 'Shopping', 'Bills', 'Entertainment', 'Health', 'Other'];
 
-        function renderWealth() {
-            const totalInvestments = investments.reduce((sum, inv) => sum + inv.currentValue, 0);
-            const totalSavings = 0; // Calculate from savings accounts
-            const totalDebt = debts.reduce((sum, d) => sum + d.balance, 0);
-            const netWorth = totalInvestments + totalSavings - totalDebt;
-
-            document.getElementById('netWorthValue').textContent = `${settings.currency}${netWorth.toFixed(0)}`;
-
-            const wealthContainer = document.getElementById('wealthBreakdown');
-            wealthContainer.innerHTML = `
-                <div class="list-item">
-                    <div class="list-icon">📈</div>
-                    <div class="list-content">
-                        <div class="list-title">Investments</div>
-                    </div>
-                    <div class="list-value" style="color: var(--accent-green);">${settings.currency}${totalInvestments.toFixed(0)}</div>
-                </div>
-                <div class="list-item">
-                    <div class="list-icon">💳</div>
-                    <div class="list-content">
-                        <div class="list-title">Debt</div>
-                    </div>
-                    <div class="list-value" style="color: var(--accent-red);">-${settings.currency}${totalDebt.toFixed(0)}</div>
-                </div>
-            `;
-
-            const invContainer = document.getElementById('investments');
-            if (investments.length === 0) {
-                invContainer.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">📈</div>
-                        <div>No investments tracked</div>
-                    </div>
-                `;
-            } else {
-                invContainer.innerHTML = investments.map(inv => `
-                    <div class="list-item">
-                        <div class="list-icon">${inv.country === 'US' ? '🇺🇸' : '🇮🇳'}</div>
-                        <div class="list-content">
-                            <div class="list-title">${inv.name}</div>
-                            <div class="list-subtitle">${inv.type}</div>
-                        </div>
-                        <div class="list-value" style="color: var(--accent-green);">${inv.currency}${inv.currentValue.toFixed(0)}</div>
-                    </div>
-                `).join('');
-            }
-        }
-
-        function renderUpcomingBills() {
-            const container = document.getElementById('upcomingBills');
-            
-            if (bills.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">📅</div>
-                        <div>No upcoming bills</div>
-                    </div>
-                `;
-                return;
-            }
-
-            const now = new Date();
-            const next7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-
-            const upcoming = bills.filter(bill => {
-                const dueDate = new Date(bill.dueDate);
-                return dueDate >= now && dueDate <= next7Days;
-            }).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
-
-            if (upcoming.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">✅</div>
-                        <div>No bills due in next 7 days</div>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = upcoming.map(bill => {
-                const dueDate = new Date(bill.dueDate);
-                const daysUntil = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
-                
-                return `
-                    <div class="list-item">
-                        <div class="list-icon">${categories[bill.category] || '📄'}</div>
-                        <div class="list-content">
-                            <div class="list-title">${bill.name}</div>
-                            <div class="list-subtitle">${dueDate.toLocaleDateString()} (${daysUntil} days)</div>
-                        </div>
-                        <div class="list-value">${settings.currency}${bill.amount.toFixed(2)}</div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function showNotifications() {
-            alert('Notifications feature coming soon!');
-        }
-
-        function saveCurrency() {
-            settings.currency = document.getElementById('currencySelect').value;
-            saveData();
-            updateDashboard();
-            renderExpenses();
-            renderBudgets();
-            renderGoals();
-            renderDebts();
-            renderWealth();
-            showToast('Currency updated', 'success');
-        }
-
-        function exportData() {
-            const data = {
-                expenses,
-                income,
-                budgets,
-                goals,
-                debts,
-                investments,
-                bills,
-                settings,
-                exportDate: new Date().toISOString()
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                addRecurring({
+                    ...formData,
+                    dayOfMonth: parseInt(formData.dayOfMonth),
+                    amount: parseFloat(formData.amount)
+                });
+                setFormData({
+                    type: 'expense',
+                    amount: '',
+                    category: 'Bills',
+                    description: '',
+                    dayOfMonth: '1'
+                });
+                setShowForm(false);
             };
-            
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `expenseflow-backup-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            
-            showToast('Data exported successfully!', 'success');
-        }
 
-        function importData() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'application/json';
-            
-            input.onchange = async (e) => {
-                try {
-                    const file = e.target.files[0];
-                    const text = await file.text();
-                    const data = JSON.parse(text);
-                    
-                    if (confirm('This will replace all your current data. Continue?')) {
-                        expenses = data.expenses || [];
-                        income = data.income || [];
-                        budgets = data.budgets || {};
-                        goals = data.goals || [];
-                        debts = data.debts || [];
-                        investments = data.investments || [];
-                        bills = data.bills || [];
-                        settings = data.settings || settings;
-                        
-                        saveData();
-                        location.reload();
-                    }
-                } catch (error) {
-                    showToast('Error importing data', 'error');
-                }
+            const toggleActive = (id) => {
+                setRecurringTransactions(prev => prev.map(r =>
+                    r.id === id ? {...r, active: !r.active} : r
+                ));
             };
-            
-            input.click();
+
+            return (
+                <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                        <h2 className="text-3xl font-bold text-gray-800">Recurring Transactions</h2>
+                        <button
+                            onClick={() => setShowForm(!showForm)}
+                            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+                        >
+                            {showForm ? 'Cancel' : '+ Add Recurring'}
+                        </button>
+                    </div>
+
+                    {showForm && (
+                        <div className="bg-white p-6 rounded-lg shadow">
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                                    <select
+                                        value={formData.type}
+                                        onChange={(e) => setFormData({...formData, type: e.target.value})}
+                                        className="w-full px-4 py-2 border rounded-lg"
+                                    >
+                                        <option value="expense">Expense</option>
+                                        <option value="income">Income</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        required
+                                        value={formData.amount}
+                                        onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                                        className="w-full px-4 py-2 border rounded-lg"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                    <select
+                                        value={formData.category}
+                                        onChange={(e) => setFormData({...formData, category: e.target.value})}
+                                        className="w-full px-4 py-2 border rounded-lg"
+                                    >
+                                        {categories.map(cat => (
+                                            <option key={cat} value={cat}>{cat}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({...formData, description: e.target.value})}
+                                        className="w-full px-4 py-2 border rounded-lg"
+                                        placeholder="e.g., Netflix Subscription"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Day of Month (1-28)</label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        max="28"
+                                        required
+                                        value={formData.dayOfMonth}
+                                        onChange={(e) => setFormData({...formData, dayOfMonth: e.target.value})}
+                                        className="w-full px-4 py-2 border rounded-lg"
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                                >
+                                    Add Recurring Transaction
+                                </button>
+                            </form>
+                        </div>
+                    )}
+
+                    <div className="bg-white rounded-lg shadow overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Day</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {recurring.map(rec => (
+                                        <tr key={rec.id}>
+                                            <td className="px-6 py-4 text-sm">
+                                                <span className={`px-2 py-1 rounded ${
+                                                    rec.type === 'expense' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                                                }`}>
+                                                    {rec.type}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-900">{rec.description}</td>
+                                            <td className="px-6 py-4 text-sm text-gray-900">{rec.category}</td>
+                                            <td className="px-6 py-4 text-sm text-gray-900">{rec.dayOfMonth}th</td>
+                                            <td className="px-6 py-4 text-sm text-right font-medium">
+                                                ${parseFloat(rec.amount).toFixed(2)}
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                                <button
+                                                    onClick={() => toggleActive(rec.id)}
+                                                    className={`px-3 py-1 rounded text-sm ${
+                                                        rec.active 
+                                                            ? 'bg-green-100 text-green-800' 
+                                                            : 'bg-gray-100 text-gray-800'
+                                                    }`}
+                                                >
+                                                    {rec.active ? '✓ Active' : '✗ Paused'}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
         }
 
-        function clearAllData() {
-            if (confirm('This will delete ALL your data. This cannot be undone. Are you sure?')) {
-                if (confirm('Really sure? This is permanent!')) {
-                    localStorage.clear();
-                    location.reload();
-                }
-            }
-        }
-
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.className = `alert alert-${type} toast`;
-            toast.innerHTML = `
-                <span>${type === 'success' ? '✓' : type === 'error' ? '⚠️' : 'ℹ️'}</span>
-                <div>${message}</div>
-            `;
-            
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.style.animation = 'slideInRight 0.3s reverse';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        // PWA Service Worker Registration
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('Service Worker registered'))
-                    .catch(err => console.log('Service Worker registration failed'));
+        // Insurance Manager Component
+        function InsuranceManager({ deductibles, addDeductible, setInsuranceDeductibles }) {
+            const [showForm, setShowForm] = useState(false);
+            const [formData, setFormData] = useState({
+                name: '',
+                totalAmount: '',
+                year: new Date().getFullYear().toString()
             });
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                addDeductible({
+                    ...formData,
+                    totalAmount: parseFloat(formData.totalAmount)
+                });
+                setFormData({
+                    name: '',
+                    totalAmount: '',
+                    year: new Date().getFullYear().toString()
+                });
+                setShowForm(false);
+            };
+
+            return (
+                <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                        <h2 className="text-3xl font-bold text-gray-800">Insurance Deductibles</h2>
+                        <button
+                            onClick={() => setShowForm(!showForm)}
+                            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+                        >
+                            {showForm ? 'Cancel' : '+ Add Deductible'}
+                        </button>
+                    </div>
+
+                    {showForm && (
+                        <div className="bg-white p-6 rounded-lg shadow">
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Insurance Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                        className="w-full px-4 py-2 border rounded-lg"
+                                        placeholder="e.g., Health Insurance 2026"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Total Deductible Amount
+                                    </label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        required
+                                        value={formData.totalAmount}
+                                        onChange={(e) => setFormData({...formData, totalAmount: e.target.value})}
+                                        className="w-full px-4 py-2 border rounded-lg"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                                    <input
+                                        type="number"
+                                        required
+                                        value={formData.year}
+                                        onChange={(e) => setFormData({...formData, year: e.target.value})}
+                                        className="w-full px-4 py-2 border rounded-lg"
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                                >
+                                    Add Deductible
+                                </button>
+                            </form>
+                        </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {deductibles.map(ded => {
+                            const percentage = (ded.currentAmount / ded.totalAmount) * 100;
+                            const remaining = ded.totalAmount - ded.currentAmount;
+                            const isMet = ded.currentAmount >= ded.totalAmount;
+
+                            return (
+                                <div key={ded.id} className="bg-white p-6 rounded-lg shadow">
+                                    <h3 className="text-lg font-bold mb-3">{ded.name}</h3>
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">Total Deductible:</span>
+                                            <span className="font-medium">${ded.totalAmount.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">Paid So Far:</span>
+                                            <span className="font-medium text-blue-600">
+                                                ${ded.currentAmount.toFixed(2)}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between text-sm font-bold">
+                                            <span>Remaining:</span>
+                                            <span className={isMet ? 'text-green-600' : 'text-orange-600'}>
+                                                ${remaining.toFixed(2)}
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-4 mt-3">
+                                            <div 
+                                                className={`h-4 rounded-full transition-all ${
+                                                    isMet ? 'bg-green-500' : 'bg-blue-500'
+                                                }`}
+                                                style={{ width: `${Math.min(percentage, 100)}%` }}
+                                            />
+                                        </div>
+                                        <p className="text-xs text-gray-500 text-center mt-1">
+                                            {percentage.toFixed(1)}% met
+                                        </p>
+                                        {isMet && (
+                                            <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                                <p className="text-sm text-green-800 text-center font-medium">
+                                                    ✓ Deductible Met! Insurance covers 100%
+                                                </p>
+                                            </div>
+                                        )}
+                                        {!isMet && remaining < ded.totalAmount * 0.2 && (
+                                            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                                <p className="text-sm text-blue-800 text-center">
+                                                    💡 Close to meeting deductible!
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {deductibles.length === 0 && (
+                        <div className="bg-white p-12 rounded-lg shadow text-center">
+                            <p className="text-gray-500 text-lg">No insurance deductibles tracked yet.</p>
+                            <p className="text-gray-400 mt-2">Click "Add Deductible" to start tracking.</p>
+                        </div>
+                    )}
+                </div>
+            );
         }
+
+        // Render the app
+        ReactDOM.render(<ExpenseTracker />, document.getElementById('root'));
     </script>
 </body>
 </html>
