@@ -1346,6 +1346,88 @@
             color: white;
         }
         
+        /* ===== SAVINGS GOALS ===== */
+        .savings-goal-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--accent-green);
+            border-radius: 12px;
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .savings-goal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .savings-goal-name {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .savings-goal-amounts {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .savings-goal-current {
+            font-family: var(--font-display);
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+        
+        .savings-goal-target {
+            font-size: var(--text-lg);
+            color: var(--text-secondary);
+        }
+        
+        .savings-goal-remaining {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-xs);
+        }
+        
+        /* ===== INVESTMENTS ===== */
+        .investment-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .investment-info {
+            flex: 1;
+        }
+        
+        .investment-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .investment-type {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+        
+        .investment-value {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: var(--text-lg);
+            color: var(--accent-green);
+        }
+        
         /* ===== UTILITIES ===== */
         .text-center {
             text-align: center;
@@ -1554,8 +1636,75 @@
             
             <!-- WEALTH TAB -->
             <div id="wealthTab" class="tab-content">
-                <!-- Income & Tax Section -->
+                <!-- Net Worth Summary -->
                 <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">💎 Net Worth</h2>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">Total Net Worth</div>
+                        <div class="summary-value positive" id="netWorthTotal">$0</div>
+                        <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--spacing-sm);">
+                            Investments - Debts
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Savings Goals -->
+                <div class="card mt-lg">
+                    <div class="card-header">
+                        <h2 class="card-title">💰 Savings Goals</h2>
+                        <button class="btn btn-primary btn-sm" id="addSavingsGoalBtn">
+                            ➕ Add Goal
+                        </button>
+                    </div>
+                    <div id="savingsGoalsList">
+                        <div class="empty-state">
+                            <div class="empty-icon">💰</div>
+                            <div class="empty-text">No savings goals</div>
+                            <div class="empty-subtext">Set goals to track your savings progress</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Investments -->
+                <div class="card mt-lg">
+                    <div class="card-header">
+                        <h2 class="card-title">📈 Investments</h2>
+                        <button class="btn btn-primary btn-sm" id="addInvestmentBtn2">
+                            ➕ Add Investment
+                        </button>
+                    </div>
+                    
+                    <!-- US Investments -->
+                    <div style="margin-bottom: var(--spacing-xl);">
+                        <h3 style="font-size: var(--text-lg); margin-bottom: var(--spacing-md); color: var(--text-primary); display: flex; align-items: center; gap: var(--spacing-sm);">
+                            🇺🇸 US Investments <span id="usInvestmentsTotal" style="font-family: var(--font-display); color: var(--accent-green);"></span>
+                        </h3>
+                        <div id="usInvestmentsList">
+                            <div class="empty-state">
+                                <div class="empty-icon">📊</div>
+                                <div class="empty-text">No US investments</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- India Investments -->
+                    <div>
+                        <h3 style="font-size: var(--text-lg); margin-bottom: var(--spacing-md); color: var(--text-primary); display: flex; align-items: center; gap: var(--spacing-sm);">
+                            🇮🇳 India Investments <span id="indiaInvestmentsTotal" style="font-family: var(--font-display); color: var(--accent-green);"></span>
+                        </h3>
+                        <div id="indiaInvestmentsList">
+                            <div class="empty-state">
+                                <div class="empty-icon">📊</div>
+                                <div class="empty-text">No India investments</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Income & Tax Section -->
+                <div class="card mt-lg">
                     <div class="card-header">
                         <h2 class="card-title">💰 Income & Tax Summary</h2>
                         <button class="btn btn-primary btn-sm" id="addIncomeBtn">
@@ -2272,6 +2421,105 @@
         </div>
     </div>
     
+    <!-- Add Savings Goal Modal -->
+    <div class="modal-overlay" id="addSavingsGoalModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Savings Goal</h3>
+                <button class="close-btn" onclick="closeModal('addSavingsGoalModal')">×</button>
+            </div>
+            
+            <form id="addSavingsGoalForm">
+                <div class="form-group">
+                    <label class="form-label">Goal Name</label>
+                    <input type="text" class="form-input" id="savingsGoalName" placeholder="e.g., Emergency Fund" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Target Amount</label>
+                    <input type="number" class="form-input" id="savingsGoalTarget" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Current Amount</label>
+                    <input type="number" class="form-input" id="savingsGoalCurrent" step="0.01" value="0" required>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addSavingsGoalModal')">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Add Goal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Add Investment Modal -->
+    <div class="modal-overlay" id="addInvestmentModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Investment</h3>
+                <button class="close-btn" onclick="closeModal('addInvestmentModal')">×</button>
+            </div>
+            
+            <form id="addInvestmentForm">
+                <div class="form-group">
+                    <label class="form-label">Investment Name</label>
+                    <input type="text" class="form-input" id="investmentName" placeholder="e.g., Vanguard 401k" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Country</label>
+                    <select class="form-select" id="investmentCountry" required>
+                        <option value="">Select country</option>
+                        <option value="US">🇺🇸 United States</option>
+                        <option value="India">🇮🇳 India</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Type</label>
+                    <select class="form-select" id="investmentType" required>
+                        <option value="">Select type</option>
+                        <optgroup label="US Options">
+                            <option value="401k">401(k)</option>
+                            <option value="IRA">IRA</option>
+                            <option value="Stocks">Stocks</option>
+                            <option value="ETF">ETF</option>
+                            <option value="HYSA">High-Yield Savings</option>
+                            <option value="Bonds">Bonds</option>
+                        </optgroup>
+                        <optgroup label="India Options">
+                            <option value="PPF">PPF</option>
+                            <option value="NPS">NPS</option>
+                            <option value="MutualFund">Mutual Funds</option>
+                            <option value="FD">Fixed Deposit</option>
+                            <option value="NSE">Stocks (NSE)</option>
+                            <option value="BSE">Stocks (BSE)</option>
+                        </optgroup>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Current Value</label>
+                    <input type="number" class="form-input" id="investmentValue" step="0.01" required>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addInvestmentModal')">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Add Investment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <!-- Toast Notification -->
     <div class="toast" id="toast"></div>
     
@@ -2306,6 +2554,8 @@
             insurance: [],
             recurring: [],
             income: [],
+            savingsGoals: [],
+            investments: [],
             settings: {
                 currency: '$',
                 budgetMonth: getCurrentMonth()
@@ -2908,6 +3158,198 @@
                 `;
             } else {
                 breakdownEl.style.display = 'none';
+            }
+        }
+        
+        // ===== SAVINGS GOALS FUNCTIONS =====
+        function addSavingsGoal(goal) {
+            goal.id = Date.now();
+            goal.createdAt = new Date().toISOString();
+            state.savingsGoals.push(goal);
+            saveData();
+            renderSavingsGoals();
+            renderNetWorth();
+            showToast('Savings goal added!');
+        }
+        
+        function deleteSavingsGoal(id) {
+            if (confirm('Delete this savings goal?')) {
+                state.savingsGoals = state.savingsGoals.filter(g => g.id !== id);
+                saveData();
+                renderSavingsGoals();
+                renderNetWorth();
+                showToast('Goal deleted');
+            }
+        }
+        
+        function updateSavingsGoal(id, currentAmount) {
+            const goal = state.savingsGoals.find(g => g.id === id);
+            if (goal) {
+                goal.currentAmount = currentAmount;
+                saveData();
+                renderSavingsGoals();
+                showToast('Goal updated!');
+            }
+        }
+        
+        function renderSavingsGoals() {
+            const list = document.getElementById('savingsGoalsList');
+            
+            if (!state.savingsGoals || state.savingsGoals.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">💰</div>
+                        <div class="empty-text">No savings goals</div>
+                        <div class="empty-subtext">Set goals to track your savings progress</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            list.innerHTML = state.savingsGoals.map(goal => {
+                const percentage = (goal.currentAmount / goal.targetAmount * 100).toFixed(0);
+                const remaining = goal.targetAmount - goal.currentAmount;
+                
+                return `
+                    <div class="savings-goal-card">
+                        <div class="savings-goal-header">
+                            <div class="savings-goal-name">${goal.name}</div>
+                            <button class="btn btn-danger btn-sm" onclick="deleteSavingsGoal(${goal.id})">🗑️</button>
+                        </div>
+                        <div class="savings-goal-amounts">
+                            <span class="savings-goal-current">${formatCurrency(goal.currentAmount)}</span>
+                            <span class="savings-goal-target">/ ${formatCurrency(goal.targetAmount)}</span>
+                            <span style="color: var(--text-secondary); margin-left: var(--spacing-sm);">(${percentage}%)</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill low" style="width: ${Math.min(percentage, 100)}%"></div>
+                        </div>
+                        <div class="savings-goal-remaining">
+                            Remaining: ${formatCurrency(Math.max(0, remaining))}
+                        </div>
+                        <button class="btn btn-secondary btn-sm" style="margin-top: var(--spacing-md);" onclick="updateGoalAmount(${goal.id})">
+                            💰 Update Amount
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function updateGoalAmount(id) {
+            const goal = state.savingsGoals.find(g => g.id === id);
+            if (!goal) return;
+            
+            const newAmount = prompt(`Current amount for ${goal.name}:`, goal.currentAmount);
+            if (newAmount === null) return;
+            
+            const amount = parseFloat(newAmount);
+            if (isNaN(amount) || amount < 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+            
+            updateSavingsGoal(id, amount);
+        }
+        
+        // ===== INVESTMENTS FUNCTIONS =====
+        function addInvestment(investment) {
+            investment.id = Date.now();
+            investment.createdAt = new Date().toISOString();
+            state.investments.push(investment);
+            saveData();
+            renderInvestments();
+            renderNetWorth();
+            showToast('Investment added!');
+        }
+        
+        function deleteInvestment(id) {
+            if (confirm('Delete this investment?')) {
+                state.investments = state.investments.filter(inv => inv.id !== id);
+                saveData();
+                renderInvestments();
+                renderNetWorth();
+                showToast('Investment deleted');
+            }
+        }
+        
+        function renderInvestments() {
+            const usList = document.getElementById('usInvestmentsList');
+            const indiaList = document.getElementById('indiaInvestmentsList');
+            
+            const usInvestments = state.investments.filter(inv => inv.country === 'US');
+            const indiaInvestments = state.investments.filter(inv => inv.country === 'India');
+            
+            // US Investments
+            if (usInvestments.length === 0) {
+                usList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📊</div>
+                        <div class="empty-text">No US investments</div>
+                    </div>
+                `;
+                document.getElementById('usInvestmentsTotal').textContent = '';
+            } else {
+                const usTotal = usInvestments.reduce((sum, inv) => sum + inv.value, 0);
+                document.getElementById('usInvestmentsTotal').textContent = `(${formatCurrency(usTotal)})`;
+                
+                usList.innerHTML = usInvestments.map(inv => `
+                    <div class="investment-item">
+                        <div class="investment-info">
+                            <div class="investment-name">${inv.name}</div>
+                            <div class="investment-type">${inv.type}</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+                            <div class="investment-value">${formatCurrency(inv.value)}</div>
+                            <button class="btn btn-danger btn-sm" onclick="deleteInvestment(${inv.id})">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            // India Investments
+            if (indiaInvestments.length === 0) {
+                indiaList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📊</div>
+                        <div class="empty-text">No India investments</div>
+                    </div>
+                `;
+                document.getElementById('indiaInvestmentsTotal').textContent = '';
+            } else {
+                const indiaTotal = indiaInvestments.reduce((sum, inv) => sum + inv.value, 0);
+                document.getElementById('indiaInvestmentsTotal').textContent = `(₹${indiaTotal.toLocaleString('en-IN')})`;
+                
+                indiaList.innerHTML = indiaInvestments.map(inv => `
+                    <div class="investment-item">
+                        <div class="investment-info">
+                            <div class="investment-name">${inv.name}</div>
+                            <div class="investment-type">${inv.type}</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+                            <div class="investment-value">₹${inv.value.toLocaleString('en-IN')}</div>
+                            <button class="btn btn-danger btn-sm" onclick="deleteInvestment(${inv.id})">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        function renderNetWorth() {
+            // Calculate total investments (US only for now, or convert India to USD)
+            const totalInvestments = state.investments
+                .filter(inv => inv.country === 'US')
+                .reduce((sum, inv) => sum + inv.value, 0);
+            
+            // Calculate total debts
+            const totalDebts = state.debts.reduce((sum, d) => sum + d.balance, 0);
+            
+            // Net worth = Investments - Debts
+            const netWorth = totalInvestments - totalDebts;
+            
+            const netWorthEl = document.getElementById('netWorthTotal');
+            if (netWorthEl) {
+                netWorthEl.textContent = formatCurrency(netWorth);
+                netWorthEl.className = 'summary-value ' + (netWorth >= 0 ? 'positive' : 'negative');
             }
         }
         
@@ -3831,6 +4273,35 @@
             document.getElementById('calculatedNetIncome').textContent = formatCurrency(netAmount);
         }
         
+        function handleAddSavingsGoal(e) {
+            e.preventDefault();
+            
+            const goal = {
+                name: document.getElementById('savingsGoalName').value,
+                targetAmount: parseFloat(document.getElementById('savingsGoalTarget').value),
+                currentAmount: parseFloat(document.getElementById('savingsGoalCurrent').value)
+            };
+            
+            addSavingsGoal(goal);
+            closeModal('addSavingsGoalModal');
+            document.getElementById('addSavingsGoalForm').reset();
+        }
+        
+        function handleAddInvestment(e) {
+            e.preventDefault();
+            
+            const investment = {
+                name: document.getElementById('investmentName').value,
+                country: document.getElementById('investmentCountry').value,
+                type: document.getElementById('investmentType').value,
+                value: parseFloat(document.getElementById('investmentValue').value)
+            };
+            
+            addInvestment(investment);
+            closeModal('addInvestmentModal');
+            document.getElementById('addInvestmentForm').reset();
+        }
+        
         function handleExport() {
             const dataStr = JSON.stringify(state, null, 2);
             const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -3947,6 +4418,9 @@
             renderRecurring();
             renderUpcomingBills();
             renderIncomeTaxSummary();
+            renderSavingsGoals();
+            renderInvestments();
+            renderNetWorth();
             renderCharts();
             updateDashboard();
             
@@ -4057,6 +4531,18 @@
                     element.addEventListener('input', updateIncomeCalculations);
                 }
             });
+            
+            // Event listeners - Savings Goals
+            document.getElementById('addSavingsGoalBtn').addEventListener('click', () => {
+                openModal('addSavingsGoalModal');
+            });
+            document.getElementById('addSavingsGoalForm').addEventListener('submit', handleAddSavingsGoal);
+            
+            // Event listeners - Investments
+            document.getElementById('addInvestmentBtn2').addEventListener('click', () => {
+                openModal('addInvestmentModal');
+            });
+            document.getElementById('addInvestmentForm').addEventListener('submit', handleAddInvestment);
             
             // Event listeners - Quick Actions
             document.getElementById('viewExpensesBtn').addEventListener('click', () => {
