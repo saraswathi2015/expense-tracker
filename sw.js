@@ -1,4 +1,4 @@
-const CACHE_NAME = 'expenseflow-v2.0-phase1';
+const CACHE_NAME = 'expenseflow-v2.0-phase3';
 const urlsToCache = [
   './',
   './index.html',
