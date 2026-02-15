@@ -194,6 +194,51 @@
             z-index: 100;
         }
         
+        .mobile-more-menu {
+            position: fixed;
+            bottom: var(--bottom-nav-height);
+            right: 0;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px 12px 0 0;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 99;
+            min-width: 200px;
+        }
+        
+        .mobile-more-menu.active {
+            display: block;
+        }
+        
+        .mobile-more-item {
+            padding: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.2s;
+        }
+        
+        .mobile-more-item:last-child {
+            border-bottom: none;
+        }
+        
+        .mobile-more-item:hover,
+        .mobile-more-item:active {
+            background: var(--bg-tertiary);
+        }
+        
+        .mobile-more-item .icon {
+            font-size: 1.5rem;
+        }
+        
+        .mobile-more-item span:last-child {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
         .nav-btn {
             flex: 1;
             background: transparent;
@@ -1986,11 +2031,27 @@
                 <span class="icon">💳</span>
                 <span>Debts</span>
             </button>
-            <button class="nav-btn" data-tab="recurring">
-                <span class="icon">🔄</span>
-                <span>Recurring</span>
+            <button class="nav-btn" onclick="toggleMobileMore(event)">
+                <span class="icon">⋯</span>
+                <span>More</span>
             </button>
         </nav>
+        
+        <!-- Mobile More Menu -->
+        <div class="mobile-more-menu" id="mobileMoreMenu">
+            <div class="mobile-more-item" data-tab="recurring" onclick="selectFromMore('recurring')">
+                <span class="icon">🔄</span>
+                <span>Recurring</span>
+            </div>
+            <div class="mobile-more-item" data-tab="wealth" onclick="selectFromMore('wealth')">
+                <span class="icon">📈</span>
+                <span>Wealth</span>
+            </div>
+            <div class="mobile-more-item" data-tab="settings" onclick="selectFromMore('settings')">
+                <span class="icon">⚙️</span>
+                <span>Settings</span>
+            </div>
+        </div>
     </div>
     
     <!-- Add Expense Modal -->
@@ -4999,6 +5060,27 @@
                 setTimeout(() => renderCharts(), 100);
             }
         }
+        
+        // Mobile More Menu Functions
+        function toggleMobileMore(event) {
+            event.stopPropagation();
+            const menu = document.getElementById('mobileMoreMenu');
+            menu.classList.toggle('active');
+        }
+        
+        function selectFromMore(tabName) {
+            const menu = document.getElementById('mobileMoreMenu');
+            menu.classList.remove('active');
+            switchTab(tabName);
+        }
+        
+        // Close More menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('mobileMoreMenu');
+            if (menu && !e.target.closest('.mobile-more-menu') && !e.target.closest('[onclick*="toggleMobileMore"]')) {
+                menu.classList.remove('active');
+            }
+        });
         
         function handleFilterChange(e) {
             if (!e.target.classList.contains('filter-tab')) return;
