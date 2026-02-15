@@ -3077,6 +3077,28 @@
             }
         }
         
+        function editExpense(id) {
+            const expense = state.expenses.find(e => e.id === id);
+            if (!expense) return;
+            
+            document.getElementById('expenseAmount').value = expense.amount;
+            document.getElementById('expenseDescription').value = expense.description;
+            document.getElementById('expenseCategory').value = expense.category;
+            document.getElementById('expenseDate').value = expense.date;
+            
+            // Handle insurance subcategory if applicable
+            if (expense.category === 'Insurance' && expense.insuranceSubcategory) {
+                document.getElementById('insuranceSubcategory').value = expense.insuranceSubcategory;
+                document.getElementById('insuranceSubcategoryGroup').classList.add('active');
+            }
+            
+            document.getElementById('addExpenseForm').dataset.editId = id;
+            document.querySelector('#addExpenseModal .modal-title').textContent = 'Edit Expense';
+            document.querySelector('#addExpenseForm button[type="submit"]').textContent = 'Update';
+            
+            openModal('addExpenseModal');
+        }
+        
         function getExpensesByMonth(category, month) {
             return state.expenses.filter(e => {
                 const expenseMonth = e.date.substring(0, 7);
@@ -3197,6 +3219,32 @@
             }
         }
         
+        function editDebt(id) {
+            const debt = state.debts.find(d => d.id === id);
+            if (!debt) return;
+            
+            document.getElementById('debtName').value = debt.name;
+            document.getElementById('debtBalance').value = debt.balance;
+            document.getElementById('debtOriginalBalance').value = debt.originalBalance;
+            document.getElementById('debtAPR').value = debt.apr;
+            document.getElementById('debtMinPayment').value = debt.minPayment;
+            document.getElementById('debtYourPayment').value = debt.yourPayment;
+            document.getElementById('debtHasPromo').checked = debt.promoAPR || false;
+            
+            if (debt.promoAPR) {
+                document.getElementById('debtPromoStart').value = debt.promoStartDate;
+                document.getElementById('debtPromoEnd').value = debt.promoEndDate;
+                document.getElementById('debtPostPromoAPR').value = debt.postPromoAPR;
+                document.getElementById('promoDetailsGroup').classList.add('active');
+            }
+            
+            document.getElementById('addDebtForm').dataset.editId = id;
+            document.querySelector('#addDebtModal .modal-title').textContent = 'Edit Debt';
+            document.querySelector('#addDebtForm button[type="submit"]').textContent = 'Update';
+            
+            openModal('addDebtModal');
+        }
+        
         function updateDebtBalance(id, newBalance) {
             const debt = state.debts.find(d => d.id === id);
             if (debt) {
@@ -3311,6 +3359,23 @@
             }
         }
         
+        function editInsurance(id) {
+            const insurance = state.insurance.find(i => i.id === id);
+            if (!insurance) return;
+            
+            document.getElementById('insuranceName').value = insurance.name;
+            document.getElementById('insuranceType').value = insurance.type;
+            document.getElementById('insuranceDeductible').value = insurance.deductible;
+            document.getElementById('insuranceYearStart').value = insurance.deductibleYear;
+            document.getElementById('insuranceOOPMax').value = insurance.outOfPocketMax || '';
+            
+            document.getElementById('addInsuranceForm').dataset.editId = id;
+            document.querySelector('#addInsuranceModal .modal-title').textContent = 'Edit Insurance Plan';
+            document.querySelector('#addInsuranceForm button[type="submit"]').textContent = 'Update';
+            
+            openModal('addInsuranceModal');
+        }
+        
         function applyToDeductible(expense, insuranceId) {
             const insurance = state.insurance.find(i => i.id === parseInt(insuranceId));
             if (!insurance) return;
@@ -3392,6 +3457,34 @@
                 renderUpcomingBills();
                 showToast('Recurring transaction deleted');
             }
+        }
+        
+        function editRecurring(id) {
+            const recurring = state.recurring.find(r => r.id === id);
+            if (!recurring) return;
+            
+            // Populate form with existing data
+            document.getElementById('recurringName').value = recurring.name;
+            document.getElementById('recurringAmount').value = recurring.amount;
+            document.getElementById('recurringType').value = recurring.type;
+            document.getElementById('recurringCategory').value = recurring.category;
+            document.getElementById('recurringFrequency').value = recurring.frequency;
+            document.getElementById('recurringStartDate').value = recurring.startDate;
+            document.getElementById('recurringReminderDays').value = recurring.reminderDays;
+            document.getElementById('recurringAutoCreate').checked = recurring.autoCreate;
+            
+            if (recurring.frequency === 'monthly') {
+                document.getElementById('recurringDayOfMonth').value = recurring.dayOfMonth;
+            }
+            
+            // Store ID for update
+            document.getElementById('addRecurringForm').dataset.editId = id;
+            
+            // Change modal title and button text
+            document.querySelector('#addRecurringModal .modal-title').textContent = 'Edit Recurring Transaction';
+            document.querySelector('#addRecurringForm button[type="submit"]').textContent = 'Update';
+            
+            openModal('addRecurringModal');
         }
         
         function calculateNextOccurrence(recurring, fromDate = null) {
@@ -3613,6 +3706,21 @@
             }
         }
         
+        function editSavingsGoal(id) {
+            const goal = state.savingsGoals.find(g => g.id === id);
+            if (!goal) return;
+            
+            document.getElementById('savingsGoalName').value = goal.name;
+            document.getElementById('savingsGoalTarget').value = goal.targetAmount;
+            document.getElementById('savingsGoalCurrent').value = goal.currentAmount;
+            
+            document.getElementById('addSavingsGoalForm').dataset.editId = id;
+            document.querySelector('#addSavingsGoalModal .modal-title').textContent = 'Edit Savings Goal';
+            document.querySelector('#addSavingsGoalForm button[type="submit"]').textContent = 'Update';
+            
+            openModal('addSavingsGoalModal');
+        }
+        
         function updateSavingsGoal(id, currentAmount) {
             const goal = state.savingsGoals.find(g => g.id === id);
             if (goal) {
@@ -3645,7 +3753,10 @@
                     <div class="savings-goal-card">
                         <div class="savings-goal-header">
                             <div class="savings-goal-name">${goal.name}</div>
-                            <button class="btn btn-danger btn-sm" onclick="deleteSavingsGoal(${goal.id})">🗑️</button>
+                            <div style="display: flex; gap: var(--spacing-xs);">
+                                <button class="btn btn-secondary btn-sm" onclick="editSavingsGoal(${goal.id})">✏️</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteSavingsGoal(${goal.id})">🗑️</button>
+                            </div>
                         </div>
                         <div class="savings-goal-amounts">
                             <span class="savings-goal-current">${formatCurrency(goal.currentAmount)}</span>
@@ -3703,6 +3814,22 @@
             }
         }
         
+        function editInvestment(id) {
+            const investment = state.investments.find(inv => inv.id === id);
+            if (!investment) return;
+            
+            document.getElementById('investmentName').value = investment.name;
+            document.getElementById('investmentCountry').value = investment.country;
+            document.getElementById('investmentType').value = investment.type;
+            document.getElementById('investmentValue').value = investment.value;
+            
+            document.getElementById('addInvestmentForm').dataset.editId = id;
+            document.querySelector('#addInvestmentModal .modal-title').textContent = 'Edit Investment';
+            document.querySelector('#addInvestmentForm button[type="submit"]').textContent = 'Update';
+            
+            openModal('addInvestmentModal');
+        }
+        
         function renderInvestments() {
             const usList = document.getElementById('usInvestmentsList');
             const indiaList = document.getElementById('indiaInvestmentsList');
@@ -3731,6 +3858,7 @@
                         </div>
                         <div style="display: flex; align-items: center; gap: var(--spacing-md);">
                             <div class="investment-value">${formatCurrency(inv.value)}</div>
+                            <button class="btn btn-secondary btn-sm" onclick="editInvestment(${inv.id})">✏️</button>
                             <button class="btn btn-danger btn-sm" onclick="deleteInvestment(${inv.id})">🗑️</button>
                         </div>
                     </div>
@@ -3758,6 +3886,7 @@
                         </div>
                         <div style="display: flex; align-items: center; gap: var(--spacing-md);">
                             <div class="investment-value">₹${inv.value.toLocaleString('en-IN')}</div>
+                            <button class="btn btn-secondary btn-sm" onclick="editInvestment(${inv.id})">✏️</button>
                             <button class="btn btn-danger btn-sm" onclick="deleteInvestment(${inv.id})">🗑️</button>
                         </div>
                     </div>
@@ -4297,6 +4426,9 @@
                     </div>
                     <div class="expense-amount">${formatCurrency(expense.amount)}</div>
                     <div class="expense-actions">
+                        <button class="btn btn-secondary btn-sm" onclick="editExpense(${expense.id})">
+                            ✏️
+                        </button>
                         <button class="btn btn-danger btn-sm" onclick="deleteExpense(${expense.id})">
                             🗑️
                         </button>
@@ -4502,6 +4634,9 @@
                             <button class="btn btn-secondary btn-sm" onclick="updateDebtPayment(${debt.id})">
                                 💰 Make Payment
                             </button>
+                            <button class="btn btn-secondary btn-sm" onclick="editDebt(${debt.id})">
+                                ✏️ Edit
+                            </button>
                             <button class="btn btn-danger btn-sm" onclick="deleteDebt(${debt.id})">
                                 🗑️ Delete
                             </button>
@@ -4588,6 +4723,9 @@
                         </div>
                         
                         <div class="recurring-actions">
+                            <button class="btn btn-secondary btn-sm" onclick="editRecurring(${rec.id})">
+                                ✏️ Edit
+                            </button>
                             <button class="btn btn-danger btn-sm" onclick="deleteRecurring(${rec.id})">
                                 🗑️ Delete
                             </button>
@@ -4739,9 +4877,14 @@
                                 <div class="insurance-name">🛡️ ${ins.name}</div>
                                 <div class="insurance-type-badge">${ins.type} Insurance</div>
                             </div>
-                            <button class="btn btn-danger btn-sm" onclick="deleteInsurance(${ins.id})">
-                                🗑️
-                            </button>
+                            <div style="display: flex; gap: var(--spacing-xs);">
+                                <button class="btn btn-secondary btn-sm" onclick="editInsurance(${ins.id})">
+                                    ✏️
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteInsurance(${ins.id})">
+                                    🗑️
+                                </button>
+                            </div>
                         </div>
                         
                         <div class="insurance-year-info">
@@ -4806,6 +4949,9 @@
         function handleAddExpense(e) {
             e.preventDefault();
             
+            const form = document.getElementById('addExpenseForm');
+            const editId = form.dataset.editId;
+            
             const expense = {
                 amount: parseFloat(document.getElementById('expenseAmount').value),
                 description: document.getElementById('expenseDescription').value,
@@ -4821,19 +4967,37 @@
                 }
             }
             
-            // Check if applying to insurance deductible
-            const applyToDeductibleChecked = document.getElementById('applyToDeductible').checked;
-            const insurancePlanId = document.getElementById('insurancePlanSelect').value;
-            
-            addExpense(expense);
-            
-            // Apply to insurance deductible if selected
-            if (applyToDeductibleChecked && insurancePlanId) {
-                applyToDeductible(expense, insurancePlanId);
+            if (editId) {
+                // Update existing expense
+                const index = state.expenses.findIndex(e => e.id === parseInt(editId));
+                if (index !== -1) {
+                    state.expenses[index] = { ...state.expenses[index], ...expense };
+                    saveData();
+                    renderExpenses();
+                    updateDashboard();
+                    showToast('Expense updated!');
+                }
+                delete form.dataset.editId;
+            } else {
+                // Add new expense
+                // Check if applying to insurance deductible
+                const applyToDeductibleChecked = document.getElementById('applyToDeductible').checked;
+                const insurancePlanId = document.getElementById('insurancePlanSelect').value;
+                
+                addExpense(expense);
+                
+                // Apply to insurance deductible if selected
+                if (applyToDeductibleChecked && insurancePlanId) {
+                    applyToDeductible(expense, insurancePlanId);
+                }
             }
             
             closeModal('addExpenseModal');
-            document.getElementById('addExpenseForm').reset();
+            form.reset();
+            
+            // Reset modal
+            document.querySelector('#addExpenseModal .modal-title').textContent = 'Add Expense';
+            document.querySelector('#addExpenseForm button[type="submit"]').textContent = 'Add Expense';
         }
         
         function handleEditBudgets(e) {
@@ -4864,6 +5028,9 @@
         function handleAddDebt(e) {
             e.preventDefault();
             
+            const form = document.getElementById('addDebtForm');
+            const editId = form.dataset.editId;
+            
             const debt = {
                 name: document.getElementById('debtName').value,
                 balance: parseFloat(document.getElementById('debtBalance').value),
@@ -4880,13 +5047,30 @@
                 debt.postPromoAPR = parseFloat(document.getElementById('debtPostPromoAPR').value);
             }
             
-            addDebt(debt);
+            if (editId) {
+                const index = state.debts.findIndex(d => d.id === parseInt(editId));
+                if (index !== -1) {
+                    state.debts[index] = { ...state.debts[index], ...debt };
+                    saveData();
+                    renderDebts();
+                    showToast('Debt updated!');
+                }
+                delete form.dataset.editId;
+            } else {
+                addDebt(debt);
+            }
+            
             closeModal('addDebtModal');
-            document.getElementById('addDebtForm').reset();
+            form.reset();
+            document.querySelector('#addDebtModal .modal-title').textContent = 'Add Debt';
+            document.querySelector('#addDebtForm button[type="submit"]').textContent = 'Add Debt';
         }
         
         function handleAddInsurance(e) {
             e.preventDefault();
+            
+            const form = document.getElementById('addInsuranceForm');
+            const editId = form.dataset.editId;
             
             const insurance = {
                 name: document.getElementById('insuranceName').value,
@@ -4896,13 +5080,30 @@
                 outOfPocketMax: parseFloat(document.getElementById('insuranceOOPMax').value) || null
             };
             
-            addInsurance(insurance);
+            if (editId) {
+                const index = state.insurance.findIndex(i => i.id === parseInt(editId));
+                if (index !== -1) {
+                    state.insurance[index] = { ...state.insurance[index], ...insurance };
+                    saveData();
+                    renderInsurance();
+                    showToast('Insurance plan updated!');
+                }
+                delete form.dataset.editId;
+            } else {
+                addInsurance(insurance);
+            }
+            
             closeModal('addInsuranceModal');
-            document.getElementById('addInsuranceForm').reset();
+            form.reset();
+            document.querySelector('#addInsuranceModal .modal-title').textContent = 'Add Insurance Plan';
+            document.querySelector('#addInsuranceForm button[type="submit"]').textContent = 'Add Plan';
         }
         
         function handleAddRecurring(e) {
             e.preventDefault();
+            
+            const form = document.getElementById('addRecurringForm');
+            const editId = form.dataset.editId;
             
             const recurring = {
                 name: document.getElementById('recurringName').value,
@@ -4919,9 +5120,28 @@
                 recurring.dayOfMonth = parseInt(document.getElementById('recurringDayOfMonth').value);
             }
             
-            addRecurring(recurring);
+            if (editId) {
+                // Update existing
+                const index = state.recurring.findIndex(r => r.id === parseInt(editId));
+                if (index !== -1) {
+                    state.recurring[index] = { ...state.recurring[index], ...recurring };
+                    saveData();
+                    renderRecurring();
+                    renderUpcomingBills();
+                    showToast('Recurring transaction updated!');
+                }
+                delete form.dataset.editId;
+            } else {
+                // Add new
+                addRecurring(recurring);
+            }
+            
             closeModal('addRecurringModal');
-            document.getElementById('addRecurringForm').reset();
+            form.reset();
+            
+            // Reset modal title and button
+            document.querySelector('#addRecurringModal .modal-title').textContent = 'Add Recurring Transaction';
+            document.querySelector('#addRecurringForm button[type="submit"]').textContent = 'Add Recurring';
         }
         
         function handleAddIncome(e) {
@@ -4984,19 +5204,40 @@
         function handleAddSavingsGoal(e) {
             e.preventDefault();
             
+            const form = document.getElementById('addSavingsGoalForm');
+            const editId = form.dataset.editId;
+            
             const goal = {
                 name: document.getElementById('savingsGoalName').value,
                 targetAmount: parseFloat(document.getElementById('savingsGoalTarget').value),
                 currentAmount: parseFloat(document.getElementById('savingsGoalCurrent').value)
             };
             
-            addSavingsGoal(goal);
+            if (editId) {
+                const index = state.savingsGoals.findIndex(g => g.id === parseInt(editId));
+                if (index !== -1) {
+                    state.savingsGoals[index] = { ...state.savingsGoals[index], ...goal };
+                    saveData();
+                    renderSavingsGoals();
+                    renderNetWorth();
+                    showToast('Savings goal updated!');
+                }
+                delete form.dataset.editId;
+            } else {
+                addSavingsGoal(goal);
+            }
+            
             closeModal('addSavingsGoalModal');
-            document.getElementById('addSavingsGoalForm').reset();
+            form.reset();
+            document.querySelector('#addSavingsGoalModal .modal-title').textContent = 'Add Savings Goal';
+            document.querySelector('#addSavingsGoalForm button[type="submit"]').textContent = 'Add Goal';
         }
         
         function handleAddInvestment(e) {
             e.preventDefault();
+            
+            const form = document.getElementById('addInvestmentForm');
+            const editId = form.dataset.editId;
             
             const investment = {
                 name: document.getElementById('investmentName').value,
@@ -5005,9 +5246,24 @@
                 value: parseFloat(document.getElementById('investmentValue').value)
             };
             
-            addInvestment(investment);
+            if (editId) {
+                const index = state.investments.findIndex(inv => inv.id === parseInt(editId));
+                if (index !== -1) {
+                    state.investments[index] = { ...state.investments[index], ...investment };
+                    saveData();
+                    renderInvestments();
+                    renderNetWorth();
+                    showToast('Investment updated!');
+                }
+                delete form.dataset.editId;
+            } else {
+                addInvestment(investment);
+            }
+            
             closeModal('addInvestmentModal');
-            document.getElementById('addInvestmentForm').reset();
+            form.reset();
+            document.querySelector('#addInvestmentModal .modal-title').textContent = 'Add Investment';
+            document.querySelector('#addInvestmentForm button[type="submit"]').textContent = 'Add Investment';
         }
         
         function handleExport() {
