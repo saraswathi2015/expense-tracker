@@ -3,981 +3,1634 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Tracker v2.0</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="description" content="Privacy-first expense tracker with debt management">
+    <meta name="theme-color" content="#0F172A">
+    <title>ExpenseFlow - Smart Expense Tracker</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sohne:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        /* ===== CSS VARIABLES ===== */
+        :root {
+            /* Background Colors */
+            --bg-primary: #0F172A;
+            --bg-secondary: #1E293B;
+            --bg-tertiary: #334155;
+            --bg-hover: #475569;
+            
+            /* Text Colors */
+            --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            
+            /* Accent Colors */
+            --accent-green: #10B981;
+            --accent-red: #EF4444;
+            --accent-amber: #F59E0B;
+            --accent-blue: #3B82F6;
+            
+            /* Borders & Shadows */
+            --border-color: #334155;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.5);
+            
+            /* Typography */
+            --font-display: 'Space Mono', monospace;
+            --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            
+            /* Sizes */
+            --text-xs: 0.75rem;
+            --text-sm: 0.875rem;
+            --text-base: 1rem;
+            --text-lg: 1.125rem;
+            --text-xl: 1.25rem;
+            --text-2xl: 1.5rem;
+            --text-3xl: 1.875rem;
+            
+            /* Spacing */
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            
+            /* Layout */
+            --max-width: 1200px;
+            --header-height: 60px;
+            --bottom-nav-height: 64px;
+        }
+        
+        /* ===== RESET & BASE STYLES ===== */
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* ===== LAYOUT ===== */
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header */
+        .header {
+            height: var(--header-height);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 var(--spacing-lg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo {
+            font-family: var(--font-display);
+            font-size: var(--text-xl);
+            font-weight: 700;
+            color: var(--accent-green);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+        
+        .icon-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: var(--spacing-sm);
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-size: var(--text-xl);
+        }
+        
+        .icon-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: var(--spacing-lg);
+            padding-bottom: calc(var(--bottom-nav-height) + var(--spacing-lg));
+            max-width: var(--max-width);
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        /* Desktop Navigation */
+        .desktop-nav {
+            display: none;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 var(--spacing-lg);
+            gap: var(--spacing-sm);
+        }
+        
+        .desktop-nav .nav-btn {
+            padding: var(--spacing-md) var(--spacing-lg);
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: var(--text-base);
+            border-bottom: 2px solid transparent;
+        }
+        
+        .desktop-nav .nav-btn:hover {
+            color: var(--text-primary);
+        }
+        
+        .desktop-nav .nav-btn.active {
+            color: var(--accent-green);
+            border-bottom-color: var(--accent-green);
+        }
+        
+        /* Mobile Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--bottom-nav-height);
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: var(--spacing-xs) 0;
+            z-index: 100;
+        }
+        
+        .nav-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            font-size: var(--text-xs);
+            transition: all 0.2s;
+        }
+        
+        .nav-btn .icon {
+            font-size: var(--text-xl);
+        }
+        
+        .nav-btn.active {
+            color: var(--accent-green);
+        }
+        
+        /* Tabs */
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* ===== CARDS ===== */
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+            box-shadow: var(--shadow);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .card-title {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        /* ===== BUTTONS ===== */
+        .btn {
+            padding: var(--spacing-sm) var(--spacing-lg);
+            border: none;
+            border-radius: 8px;
+            font-size: var(--text-base);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .btn-primary {
+            background: var(--accent-green);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #059669;
+        }
+        
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--bg-hover);
+        }
+        
+        .btn-danger {
+            background: var(--accent-red);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #DC2626;
+        }
+        
+        .btn-sm {
+            padding: var(--spacing-xs) var(--spacing-md);
+            font-size: var(--text-sm);
+        }
+        
+        /* ===== FORMS ===== */
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: var(--spacing-sm);
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
+            font-weight: 500;
+        }
+        
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: var(--spacing-md);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: var(--text-base);
+            transition: all 0.2s;
+        }
+        
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            background: var(--bg-hover);
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        /* ===== MODALS ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            padding: var(--spacing-lg);
+            overflow-y: auto;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: var(--spacing-xl);
+            max-width: 500px;
+            width: 100%;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            margin: var(--spacing-lg) auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .modal-title {
+            font-size: var(--text-xl);
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: var(--text-2xl);
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+        
+        .close-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-xl);
+            justify-content: flex-end;
+        }
+        
+        /* ===== EXPENSE LIST ===== */
+        .expense-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+        
+        .expense-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: var(--spacing-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        
+        .expense-item:hover {
+            background: var(--bg-hover);
+        }
+        
+        .expense-info {
+            flex: 1;
+        }
+        
+        .expense-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .expense-category-icon {
+            font-size: var(--text-lg);
+        }
+        
+        .expense-description {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .expense-meta {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+        
+        .expense-amount {
+            font-family: var(--font-display);
+            font-size: var(--text-xl);
+            font-weight: 700;
+            color: var(--accent-red);
+        }
+        
+        .expense-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-left: var(--spacing-md);
+        }
+        
+        /* ===== SUMMARY CARDS ===== */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .summary-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: var(--spacing-lg);
+            text-align: center;
+        }
+        
+        .summary-label {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .summary-value {
+            font-family: var(--font-display);
+            font-size: var(--text-2xl);
+            font-weight: 700;
+        }
+        
+        .summary-value.positive {
+            color: var(--accent-green);
+        }
+        
+        .summary-value.negative {
+            color: var(--accent-red);
+        }
+        
+        /* ===== BUDGET PROGRESS ===== */
+        .budget-item {
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .budget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .budget-category {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-weight: 500;
+        }
+        
+        .budget-amounts {
+            font-family: var(--font-display);
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s, background-color 0.3s;
+        }
+        
+        .progress-fill.low {
+            background: var(--accent-green);
+        }
+        
+        .progress-fill.medium {
+            background: var(--accent-amber);
+        }
+        
+        .progress-fill.high {
+            background: var(--accent-red);
+        }
+        
+        /* ===== QUICK ACTIONS ===== */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .quick-action-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: var(--spacing-lg);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--spacing-sm);
+            text-align: center;
+        }
+        
+        .quick-action-btn:hover {
+            background: var(--bg-tertiary);
+            transform: translateY(-2px);
+        }
+        
+        .quick-action-icon {
+            font-size: var(--text-3xl);
+        }
+        
+        .quick-action-label {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+        
+        /* ===== FILTER TABS ===== */
+        .filter-tabs {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+            background: var(--bg-secondary);
+            padding: var(--spacing-sm);
+            border-radius: 8px;
+        }
+        
+        .filter-tab {
+            flex: 1;
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: var(--text-sm);
+        }
+        
+        .filter-tab.active {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-xl);
+            color: var(--text-secondary);
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: var(--spacing-md);
+            opacity: 0.3;
+        }
+        
+        .empty-text {
+            font-size: var(--text-lg);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .empty-subtext {
+            font-size: var(--text-sm);
+        }
+        
+        /* ===== TOAST NOTIFICATIONS ===== */
+        .toast {
+            position: fixed;
+            bottom: calc(var(--bottom-nav-height) + var(--spacing-lg));
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            z-index: 2000;
+            display: none;
+            border: 1px solid var(--border-color);
+        }
+        
+        .toast.show {
+            display: block;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+        
+        /* ===== SUBCATEGORY SELECT ===== */
+        .subcategory-group {
+            display: none;
+            margin-top: var(--spacing-md);
+        }
+        
+        .subcategory-group.active {
+            display: block;
+        }
+        
+        /* ===== SETTINGS SECTION ===== */
+        .settings-section {
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .settings-title {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
+            color: var(--text-primary);
+        }
+        
+        .settings-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .settings-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .settings-item-title {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .settings-item-description {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-xs);
+        }
+        
+        /* ===== RESPONSIVE ===== */
+        @media (min-width: 768px) {
+            .bottom-nav {
+                display: none;
+            }
+            
+            .desktop-nav {
+                display: flex;
+            }
+            
+            .main-content {
+                padding-bottom: var(--spacing-lg);
+            }
+            
+            .toast {
+                bottom: var(--spacing-lg);
+            }
+            
+            .summary-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        /* ===== UTILITIES ===== */
+        .text-center {
+            text-align: center;
+        }
+        
+        .mt-lg {
+            margin-top: var(--spacing-lg);
+        }
+        
+        .mb-lg {
+            margin-bottom: var(--spacing-lg);
         }
     </style>
 </head>
 <body>
-    <div id="root"></div>
-
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-
-        // Main App Component
-        function ExpenseTracker() {
-            const [expenses, setExpenses] = useState([]);
-            const [income, setIncome] = useState([]);
-            const [budgets, setBudgets] = useState({});
-            const [recurringTransactions, setRecurringTransactions] = useState([]);
-            const [insuranceDeductibles, setInsuranceDeductibles] = useState([]);
-            const [currentView, setCurrentView] = useState('dashboard');
-            const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7));
-
-            // Load data from localStorage
-            useEffect(() => {
-                const savedExpenses = localStorage.getItem('expenses');
-                const savedIncome = localStorage.getItem('income');
-                const savedBudgets = localStorage.getItem('budgets');
-                const savedRecurring = localStorage.getItem('recurring');
-                const savedDeductibles = localStorage.getItem('deductibles');
-
-                if (savedExpenses) setExpenses(JSON.parse(savedExpenses));
-                if (savedIncome) setIncome(JSON.parse(savedIncome));
-                if (savedBudgets) setBudgets(JSON.parse(savedBudgets));
-                if (savedRecurring) setRecurringTransactions(JSON.parse(savedRecurring));
-                if (savedDeductibles) setInsuranceDeductibles(JSON.parse(savedDeductibles));
-            }, []);
-
-            // Save data to localStorage
-            useEffect(() => {
-                localStorage.setItem('expenses', JSON.stringify(expenses));
-            }, [expenses]);
-
-            useEffect(() => {
-                localStorage.setItem('income', JSON.stringify(income));
-            }, [income]);
-
-            useEffect(() => {
-                localStorage.setItem('budgets', JSON.stringify(budgets));
-            }, [budgets]);
-
-            useEffect(() => {
-                localStorage.setItem('recurring', JSON.stringify(recurringTransactions));
-            }, [recurringTransactions]);
-
-            useEffect(() => {
-                localStorage.setItem('deductibles', JSON.stringify(insuranceDeductibles));
-            }, [insuranceDeductibles]);
-
-            // Process recurring transactions at the start of each month
-            useEffect(() => {
-                const checkRecurring = () => {
-                    const today = new Date();
-                    const currentDay = today.getDate();
-                    
-                    recurringTransactions.forEach(recurring => {
-                        if (recurring.dayOfMonth === currentDay && recurring.active) {
-                            const lastProcessed = new Date(recurring.lastProcessed || 0);
-                            const daysSinceProcessed = (today - lastProcessed) / (1000 * 60 * 60 * 24);
-                            
-                            // Only process if it hasn't been processed this month
-                            if (daysSinceProcessed >= 28) {
-                                const newTransaction = {
-                                    id: Date.now() + Math.random(),
-                                    ...recurring,
-                                    date: today.toISOString().slice(0, 10),
-                                    isRecurring: true
-                                };
-                                
-                                if (recurring.type === 'expense') {
-                                    setExpenses(prev => [...prev, newTransaction]);
-                                } else {
-                                    setIncome(prev => [...prev, newTransaction]);
-                                }
-                                
-                                // Update last processed date
-                                setRecurringTransactions(prev => prev.map(r => 
-                                    r.id === recurring.id 
-                                        ? {...r, lastProcessed: today.toISOString()} 
-                                        : r
-                                ));
-                            }
-                        }
-                    });
-                };
-                
-                // Check on component mount and every day
-                checkRecurring();
-                const interval = setInterval(checkRecurring, 24 * 60 * 60 * 1000);
-                return () => clearInterval(interval);
-            }, [recurringTransactions]);
-
-            const addExpense = (expense) => {
-                setExpenses([...expenses, { ...expense, id: Date.now() }]);
-            };
-
-            const addIncome = (inc) => {
-                setIncome([...income, { ...inc, id: Date.now() }]);
-            };
-
-            const addRecurring = (recurring) => {
-                setRecurringTransactions([...recurringTransactions, { ...recurring, id: Date.now(), active: true }]);
-            };
-
-            const addDeductible = (deductible) => {
-                setInsuranceDeductibles([...insuranceDeductibles, { ...deductible, id: Date.now(), currentAmount: 0 }]);
-            };
-
-            const updateDeductibleProgress = (id, amount) => {
-                setInsuranceDeductibles(prev => prev.map(d => 
-                    d.id === id 
-                        ? {...d, currentAmount: Math.min(d.currentAmount + amount, d.totalAmount)} 
-                        : d
-                ));
-            };
-
-            return (
-                <div className="min-h-screen bg-gray-50">
-                    <Navigation currentView={currentView} setCurrentView={setCurrentView} />
-                    
-                    <div className="container mx-auto px-4 py-8">
-                        {currentView === 'dashboard' && (
-                            <Dashboard 
-                                expenses={expenses} 
-                                income={income} 
-                                budgets={budgets}
-                                currentMonth={currentMonth}
-                            />
-                        )}
-                        
-                        {currentView === 'expenses' && (
-                            <ExpenseManager 
-                                expenses={expenses}
-                                addExpense={addExpense}
-                                insuranceDeductibles={insuranceDeductibles}
-                                updateDeductibleProgress={updateDeductibleProgress}
-                            />
-                        )}
-                        
-                        {currentView === 'budgets' && (
-                            <BudgetManager 
-                                budgets={budgets}
-                                setBudgets={setBudgets}
-                                expenses={expenses}
-                                currentMonth={currentMonth}
-                            />
-                        )}
-                        
-                        {currentView === 'recurring' && (
-                            <RecurringManager 
-                                recurring={recurringTransactions}
-                                addRecurring={addRecurring}
-                                setRecurringTransactions={setRecurringTransactions}
-                            />
-                        )}
-                        
-                        {currentView === 'insurance' && (
-                            <InsuranceManager 
-                                deductibles={insuranceDeductibles}
-                                addDeductible={addDeductible}
-                                setInsuranceDeductibles={setInsuranceDeductibles}
-                            />
-                        )}
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                💰 ExpenseFlow
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" id="notificationBtn" title="Notifications">
+                    🔔
+                </button>
+            </div>
+        </header>
+        
+        <!-- Desktop Navigation -->
+        <nav class="desktop-nav">
+            <button class="nav-btn active" data-tab="home">🏠 Home</button>
+            <button class="nav-btn" data-tab="expenses">💰 Expenses</button>
+            <button class="nav-btn" data-tab="goals">🎯 Goals</button>
+            <button class="nav-btn" data-tab="wealth">📈 Wealth</button>
+            <button class="nav-btn" data-tab="settings">⚙️ Settings</button>
+        </nav>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- HOME TAB -->
+            <div id="homeTab" class="tab-content active">
+                <!-- Summary Cards -->
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <div class="summary-label">Total Spent</div>
+                        <div class="summary-value negative" id="totalSpent">$0</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">Budget Used</div>
+                        <div class="summary-value" id="budgetUsed">0%</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">Budget Left</div>
+                        <div class="summary-value positive" id="budgetLeft">$0</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">This Month</div>
+                        <div class="summary-value" id="monthName">Feb 2026</div>
                     </div>
                 </div>
-            );
-        }
-
-        // Navigation Component
-        function Navigation({ currentView, setCurrentView }) {
-            const menuItems = [
-                { id: 'dashboard', label: '📊 Dashboard', icon: '📊' },
-                { id: 'expenses', label: '💰 Expenses', icon: '💰' },
-                { id: 'budgets', label: '🎯 Budgets', icon: '🎯' },
-                { id: 'recurring', label: '🔄 Recurring', icon: '🔄' },
-                { id: 'insurance', label: '🛡️ Insurance', icon: '🛡️' }
-            ];
-
-            return (
-                <nav className="bg-blue-600 text-white shadow-lg">
-                    <div className="container mx-auto px-4">
-                        <div className="flex justify-between items-center py-4">
-                            <h1 className="text-2xl font-bold">Expense Tracker v2.0</h1>
-                            <div className="hidden md:flex space-x-4">
-                                {menuItems.map(item => (
-                                    <button
-                                        key={item.id}
-                                        onClick={() => setCurrentView(item.id)}
-                                        className={`px-4 py-2 rounded ${
-                                            currentView === item.id 
-                                                ? 'bg-blue-700' 
-                                                : 'hover:bg-blue-500'
-                                        }`}
-                                    >
-                                        {item.label}
-                                    </button>
-                                ))}
-                            </div>
+                
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <button class="quick-action-btn" id="addExpenseBtn">
+                        <div class="quick-action-icon">➕</div>
+                        <div class="quick-action-label">Add Expense</div>
+                    </button>
+                    <button class="quick-action-btn" id="viewExpensesBtn">
+                        <div class="quick-action-icon">📊</div>
+                        <div class="quick-action-label">View All</div>
+                    </button>
+                    <button class="quick-action-btn" id="setBudgetBtn">
+                        <div class="quick-action-icon">🎯</div>
+                        <div class="quick-action-label">Set Budget</div>
+                    </button>
+                </div>
+                
+                <!-- Recent Expenses -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Recent Expenses</h2>
+                    </div>
+                    <div id="recentExpensesList" class="expense-list">
+                        <div class="empty-state">
+                            <div class="empty-icon">💸</div>
+                            <div class="empty-text">No expenses yet</div>
+                            <div class="empty-subtext">Add your first expense to get started</div>
                         </div>
-                        <div className="md:hidden pb-4">
-                            <select 
-                                value={currentView}
-                                onChange={(e) => setCurrentView(e.target.value)}
-                                className="w-full px-4 py-2 rounded text-gray-800"
-                            >
-                                {menuItems.map(item => (
-                                    <option key={item.id} value={item.id}>{item.label}</option>
-                                ))}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- EXPENSES TAB -->
+            <div id="expensesTab" class="tab-content">
+                <div class="card-header">
+                    <h2 class="card-title">All Expenses</h2>
+                    <button class="btn btn-primary btn-sm" id="addExpenseBtn2">
+                        ➕ Add Expense
+                    </button>
+                </div>
+                
+                <!-- Filter Tabs -->
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="current">Current Month</button>
+                    <button class="filter-tab" data-filter="last">Last Month</button>
+                    <button class="filter-tab" data-filter="all">All Time</button>
+                </div>
+                
+                <div id="allExpensesList" class="expense-list">
+                    <div class="empty-state">
+                        <div class="empty-icon">💸</div>
+                        <div class="empty-text">No expenses yet</div>
+                        <div class="empty-subtext">Add your first expense to get started</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- GOALS TAB -->
+            <div id="goalsTab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Budget Status</h2>
+                        <button class="btn btn-primary btn-sm" id="editBudgetsBtn">
+                            ✏️ Edit Budgets
+                        </button>
+                    </div>
+                    <div id="budgetList">
+                        <div class="empty-state">
+                            <div class="empty-icon">🎯</div>
+                            <div class="empty-text">No budgets set</div>
+                            <div class="empty-subtext">Set your monthly budgets to start tracking</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- WEALTH TAB -->
+            <div id="wealthTab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Net Worth</h2>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">Total Net Worth</div>
+                        <div class="summary-value positive">$0</div>
+                    </div>
+                    <div class="empty-state mt-lg">
+                        <div class="empty-icon">📈</div>
+                        <div class="empty-text">Coming in Phase 2</div>
+                        <div class="empty-subtext">Investment tracking will be available soon</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SETTINGS TAB -->
+            <div id="settingsTab" class="tab-content">
+                <div class="settings-section">
+                    <h3 class="settings-title">Data Management</h3>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-header">
+                            <div>
+                                <div class="settings-item-title">📤 Export Data</div>
+                                <div class="settings-item-description">Download all your data as JSON</div>
+                            </div>
+                            <button class="btn btn-primary btn-sm" id="exportBtn">Export</button>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-header">
+                            <div>
+                                <div class="settings-item-title">📥 Import Data</div>
+                                <div class="settings-item-description">Restore data from a backup file</div>
+                            </div>
+                            <button class="btn btn-primary btn-sm" id="importBtn">Import</button>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-header">
+                            <div>
+                                <div class="settings-item-title">🗑️ Clear All Data</div>
+                                <div class="settings-item-description">Delete all expenses, budgets, and settings</div>
+                            </div>
+                            <button class="btn btn-danger btn-sm" id="clearDataBtn">Clear</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3 class="settings-title">Preferences</h3>
+                    
+                    <div class="settings-item">
+                        <div class="form-group">
+                            <label class="form-label">Primary Currency</label>
+                            <select class="form-select" id="currencySelect">
+                                <option value="$">USD ($)</option>
+                                <option value="₹">INR (₹)</option>
+                                <option value="€">EUR (€)</option>
+                                <option value="£">GBP (£)</option>
                             </select>
                         </div>
                     </div>
-                </nav>
-            );
-        }
-
-        // Dashboard Component
-        function Dashboard({ expenses, income, budgets, currentMonth }) {
-            const categories = ['Food', 'Transport', 'Shopping', 'Bills', 'Entertainment', 'Health', 'Other'];
-            
-            const monthExpenses = expenses.filter(e => e.date.startsWith(currentMonth));
-            const monthIncome = income.filter(i => i.date.startsWith(currentMonth));
-            
-            const totalExpenses = monthExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
-            const totalIncome = monthIncome.reduce((sum, i) => sum + parseFloat(i.amount), 0);
-            
-            const categoryTotals = categories.reduce((acc, cat) => {
-                acc[cat] = monthExpenses
-                    .filter(e => e.category === cat)
-                    .reduce((sum, e) => sum + parseFloat(e.amount), 0);
-                return acc;
-            }, {});
-
-            return (
-                <div className="space-y-6">
-                    <h2 className="text-3xl font-bold text-gray-800">Dashboard</h2>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="bg-white p-6 rounded-lg shadow">
-                            <h3 className="text-gray-500 text-sm">Total Income</h3>
-                            <p className="text-3xl font-bold text-green-600">${totalIncome.toFixed(2)}</p>
-                        </div>
-                        <div className="bg-white p-6 rounded-lg shadow">
-                            <h3 className="text-gray-500 text-sm">Total Expenses</h3>
-                            <p className="text-3xl font-bold text-red-600">${totalExpenses.toFixed(2)}</p>
-                        </div>
-                        <div className="bg-white p-6 rounded-lg shadow">
-                            <h3 className="text-gray-500 text-sm">Net Balance</h3>
-                            <p className={`text-3xl font-bold ${totalIncome - totalExpenses >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                ${(totalIncome - totalExpenses).toFixed(2)}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="bg-white p-6 rounded-lg shadow">
-                        <h3 className="text-xl font-bold mb-4">Spending by Category</h3>
-                        <div className="space-y-3">
-                            {categories.map(cat => {
-                                const spent = categoryTotals[cat];
-                                const budget = budgets[cat]?.amount || 0;
-                                const percentage = budget > 0 ? (spent / budget) * 100 : 0;
-                                
-                                return (
-                                    <div key={cat} className="space-y-1">
-                                        <div className="flex justify-between">
-                                            <span className="font-medium">{cat}</span>
-                                            <span className="text-gray-600">
-                                                ${spent.toFixed(2)} / ${budget.toFixed(2)}
-                                            </span>
-                                        </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-2">
-                                            <div 
-                                                className={`h-2 rounded-full ${
-                                                    percentage > 100 ? 'bg-red-500' : 
-                                                    percentage > 80 ? 'bg-yellow-500' : 'bg-green-500'
-                                                }`}
-                                                style={{ width: `${Math.min(percentage, 100)}%` }}
-                                            />
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3 class="settings-title">About</h3>
+                    <div class="settings-item">
+                        <div class="settings-item-title">ExpenseFlow v2.0</div>
+                        <div class="settings-item-description">Phase 1 - Core Foundation</div>
+                        <div class="settings-item-description mt-lg">Privacy-first expense tracker with advanced features</div>
                     </div>
                 </div>
-            );
-        }
-
-        // Expense Manager Component
-        function ExpenseManager({ expenses, addExpense, insuranceDeductibles, updateDeductibleProgress }) {
-            const [showForm, setShowForm] = useState(false);
-            const [formData, setFormData] = useState({
-                amount: '',
-                category: 'Food',
-                description: '',
-                date: new Date().toISOString().slice(0, 10),
-                applyToDeductible: false,
-                deductibleId: ''
-            });
-
-            const categories = ['Food', 'Transport', 'Shopping', 'Bills', 'Entertainment', 'Health', 'Other'];
-
-            const handleSubmit = (e) => {
-                e.preventDefault();
-                addExpense(formData);
+            </div>
+        </main>
+        
+        <!-- Mobile Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-btn active" data-tab="home">
+                <span class="icon">🏠</span>
+                <span>Home</span>
+            </button>
+            <button class="nav-btn" data-tab="expenses">
+                <span class="icon">💰</span>
+                <span>Expenses</span>
+            </button>
+            <button class="nav-btn" data-tab="goals">
+                <span class="icon">🎯</span>
+                <span>Goals</span>
+            </button>
+            <button class="nav-btn" data-tab="wealth">
+                <span class="icon">📈</span>
+                <span>Wealth</span>
+            </button>
+            <button class="nav-btn" data-tab="settings">
+                <span class="icon">⚙️</span>
+                <span>Settings</span>
+            </button>
+        </nav>
+    </div>
+    
+    <!-- Add Expense Modal -->
+    <div class="modal-overlay" id="addExpenseModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Expense</h3>
+                <button class="close-btn" onclick="closeModal('addExpenseModal')">×</button>
+            </div>
+            
+            <form id="addExpenseForm">
+                <div class="form-group">
+                    <label class="form-label">Amount</label>
+                    <input type="number" class="form-input" id="expenseAmount" step="0.01" required>
+                </div>
                 
-                if (formData.applyToDeductible && formData.deductibleId) {
-                    updateDeductibleProgress(parseInt(formData.deductibleId), parseFloat(formData.amount));
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <input type="text" class="form-input" id="expenseDescription" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" id="expenseCategory" required>
+                        <option value="">Select category</option>
+                        <option value="Food">🍔 Food & Dining</option>
+                        <option value="Transport">🚗 Transport</option>
+                        <option value="Shopping">🛍️ Shopping</option>
+                        <option value="Bills">💡 Bills & Utilities</option>
+                        <option value="Entertainment">🎬 Entertainment</option>
+                        <option value="Health">💊 Health & Medical</option>
+                        <option value="Housing">🏠 Housing</option>
+                        <option value="Insurance">👔 Insurance</option>
+                        <option value="Education">🎓 Education</option>
+                        <option value="Family">👨‍👩‍👧 Family Support</option>
+                        <option value="Other">📦 Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group subcategory-group" id="insuranceSubcategoryGroup">
+                    <label class="form-label">Insurance Type</label>
+                    <select class="form-select" id="insuranceSubcategory">
+                        <option value="">Select insurance type</option>
+                        <option value="Medical">Medical insurance premium</option>
+                        <option value="Dental">Dental insurance premium</option>
+                        <option value="Vision">Vision insurance premium</option>
+                        <option value="Auto">Auto insurance premium</option>
+                        <option value="Home">Home insurance premium</option>
+                        <option value="Life">Life insurance premium</option>
+                        <option value="Disability">Disability insurance premium</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="date" class="form-input" id="expenseDate" required>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addExpenseModal')">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Add Expense
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit Budgets Modal -->
+    <div class="modal-overlay" id="editBudgetsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Set Monthly Budgets</h3>
+                <button class="close-btn" onclick="closeModal('editBudgetsModal')">×</button>
+            </div>
+            
+            <form id="editBudgetsForm">
+                <div class="form-group">
+                    <label class="form-label">🍔 Food & Dining</label>
+                    <input type="number" class="form-input" id="budgetFood" step="0.01" placeholder="0.00">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">🚗 Transport</label>
+                    <input type="number" class="form-input" id="budgetTransport" step="0.01" placeholder="0.00">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">🛍️ Shopping</label>
+                    <input type="number" class="form-input" id="budgetShopping" step="0.01" placeholder="0.00">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">💡 Bills & Utilities</label>
+                    <input type="number" class="form-input" id="budgetBills" step="0.01" placeholder="0.00">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">🎬 Entertainment</label>
+                    <input type="number" class="form-input" id="budgetEntertainment" step="0.01" placeholder="0.00">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">💊 Health & Medical</label>
+                    <input type="number" class="form-input" id="budgetHealth" step="0.01" placeholder="0.00">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">🏠 Housing</label>
+                    <input type="number" class="form-input" id="budgetHousing" step="0.01" placeholder="0.00">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">👔 Insurance</label>
+                    <input type="number" class="form-input" id="budgetInsurance" step="0.01" placeholder="0.00">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">🎓 Education</label>
+                    <input type="number" class="form-input" id="budgetEducation" step="0.01" placeholder="0.00">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">👨‍👩‍👧 Family Support</label>
+                    <input type="number" class="form-input" id="budgetFamily" step="0.01" placeholder="0.00">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">📦 Other</label>
+                    <input type="number" class="form-input" id="budgetOther" step="0.01" placeholder="0.00">
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editBudgetsModal')">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Save Budgets
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+    
+    <!-- Hidden file input for import -->
+    <input type="file" id="importFileInput" accept=".json" style="display: none;">
+    
+    <script>
+        // ===== DATA STRUCTURE =====
+        const CATEGORIES = {
+            'Food': '🍔',
+            'Transport': '🚗',
+            'Shopping': '🛍️',
+            'Bills': '💡',
+            'Entertainment': '🎬',
+            'Health': '💊',
+            'Housing': '🏠',
+            'Insurance': '👔',
+            'Education': '🎓',
+            'Family': '👨‍👩‍👧',
+            'Other': '📦'
+        };
+        
+        const INSURANCE_SUBCATEGORIES = [
+            'Medical', 'Dental', 'Vision', 'Auto', 'Home', 'Life', 'Disability'
+        ];
+        
+        // ===== STATE =====
+        let state = {
+            expenses: [],
+            budgets: {},
+            settings: {
+                currency: '$',
+                budgetMonth: getCurrentMonth()
+            },
+            currentFilter: 'current'
+        };
+        
+        // ===== UTILITY FUNCTIONS =====
+        function getCurrentMonth() {
+            const now = new Date();
+            return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        }
+        
+        function formatCurrency(amount) {
+            return `${state.settings.currency}${Math.abs(amount).toFixed(2)}`;
+        }
+        
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+        
+        function getMonthName(monthStr) {
+            const [year, month] = monthStr.split('-');
+            const date = new Date(year, month - 1);
+            return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        }
+        
+        function getPreviousMonth(monthStr) {
+            const [year, month] = monthStr.split('-');
+            const date = new Date(year, month - 1);
+            date.setMonth(date.getMonth() - 1);
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        }
+        
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
+        // ===== STORAGE FUNCTIONS =====
+        function saveData() {
+            localStorage.setItem('expenseflow_data', JSON.stringify(state));
+        }
+        
+        function loadData() {
+            const saved = localStorage.getItem('expenseflow_data');
+            if (saved) {
+                state = JSON.parse(saved);
+                // Ensure current month is set
+                if (!state.settings.budgetMonth) {
+                    state.settings.budgetMonth = getCurrentMonth();
                 }
+            }
+        }
+        
+        // ===== EXPENSE FUNCTIONS =====
+        function addExpense(expense) {
+            expense.id = Date.now();
+            expense.timestamp = new Date().toISOString();
+            expense.type = 'manual';
+            state.expenses.unshift(expense);
+            saveData();
+            renderExpenses();
+            updateDashboard();
+            showToast('Expense added successfully!');
+        }
+        
+        function deleteExpense(id) {
+            if (confirm('Are you sure you want to delete this expense?')) {
+                state.expenses = state.expenses.filter(e => e.id !== id);
+                saveData();
+                renderExpenses();
+                updateDashboard();
+                showToast('Expense deleted');
+            }
+        }
+        
+        function getExpensesByMonth(category, month) {
+            return state.expenses.filter(e => {
+                const expenseMonth = e.date.substring(0, 7);
+                return expenseMonth === month && (!category || e.category === category);
+            });
+        }
+        
+        function filterExpenses() {
+            const filter = state.currentFilter;
+            const currentMonth = getCurrentMonth();
+            const lastMonth = getPreviousMonth(currentMonth);
+            
+            if (filter === 'current') {
+                return getExpensesByMonth(null, currentMonth);
+            } else if (filter === 'last') {
+                return getExpensesByMonth(null, lastMonth);
+            } else {
+                return state.expenses;
+            }
+        }
+        
+        // ===== BUDGET FUNCTIONS =====
+        function saveBudgets(budgets) {
+            state.budgets = budgets;
+            saveData();
+            renderBudgets();
+            updateDashboard();
+            showToast('Budgets saved successfully!');
+        }
+        
+        function calculateBudgetProgress(category) {
+            const budget = state.budgets[category];
+            if (!budget || budget.amount <= 0) return null;
+            
+            const currentMonth = getCurrentMonth();
+            const expenses = getExpensesByMonth(category, currentMonth);
+            const spent = expenses.reduce((sum, e) => sum + e.amount, 0);
+            const remaining = budget.amount - spent;
+            const percentage = (spent / budget.amount) * 100;
+            
+            return {
+                budget: budget.amount,
+                spent,
+                remaining,
+                percentage: Math.min(percentage, 100)
+            };
+        }
+        
+        // ===== RENDER FUNCTIONS =====
+        function renderExpenses() {
+            const recentList = document.getElementById('recentExpensesList');
+            const allList = document.getElementById('allExpensesList');
+            
+            // Recent expenses (last 5)
+            const recentExpenses = state.expenses.slice(0, 5);
+            if (recentExpenses.length === 0) {
+                recentList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">💸</div>
+                        <div class="empty-text">No expenses yet</div>
+                        <div class="empty-subtext">Add your first expense to get started</div>
+                    </div>
+                `;
+            } else {
+                recentList.innerHTML = recentExpenses.map(e => createExpenseHTML(e)).join('');
+            }
+            
+            // All expenses (filtered)
+            const filteredExpenses = filterExpenses();
+            if (filteredExpenses.length === 0) {
+                allList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">💸</div>
+                        <div class="empty-text">No expenses found</div>
+                        <div class="empty-subtext">Try changing the filter or add new expenses</div>
+                    </div>
+                `;
+            } else {
+                allList.innerHTML = filteredExpenses.map(e => createExpenseHTML(e)).join('');
+            }
+        }
+        
+        function createExpenseHTML(expense) {
+            const icon = CATEGORIES[expense.category] || '📦';
+            const description = expense.insuranceSubcategory 
+                ? `${expense.description} (${expense.insuranceSubcategory})`
+                : expense.description;
+            
+            return `
+                <div class="expense-item">
+                    <div class="expense-info">
+                        <div class="expense-header">
+                            <span class="expense-category-icon">${icon}</span>
+                            <span class="expense-description">${description}</span>
+                        </div>
+                        <div class="expense-meta">
+                            ${expense.category} • ${formatDate(expense.date)}
+                        </div>
+                    </div>
+                    <div class="expense-amount">${formatCurrency(expense.amount)}</div>
+                    <div class="expense-actions">
+                        <button class="btn btn-danger btn-sm" onclick="deleteExpense(${expense.id})">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderBudgets() {
+            const budgetList = document.getElementById('budgetList');
+            const categoriesWithBudgets = Object.entries(state.budgets).filter(([_, b]) => b.amount > 0);
+            
+            if (categoriesWithBudgets.length === 0) {
+                budgetList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🎯</div>
+                        <div class="empty-text">No budgets set</div>
+                        <div class="empty-subtext">Set your monthly budgets to start tracking</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            budgetList.innerHTML = categoriesWithBudgets.map(([category, budget]) => {
+                const progress = calculateBudgetProgress(category);
+                if (!progress) return '';
                 
-                setFormData({
-                    amount: '',
-                    category: 'Food',
-                    description: '',
-                    date: new Date().toISOString().slice(0, 10),
-                    applyToDeductible: false,
-                    deductibleId: ''
-                });
-                setShowForm(false);
-            };
-
-            return (
-                <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                        <h2 className="text-3xl font-bold text-gray-800">Expenses</h2>
-                        <button
-                            onClick={() => setShowForm(!showForm)}
-                            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-                        >
-                            {showForm ? 'Cancel' : '+ Add Expense'}
-                        </button>
-                    </div>
-
-                    {showForm && (
-                        <div className="bg-white p-6 rounded-lg shadow">
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        required
-                                        value={formData.amount}
-                                        onChange={(e) => setFormData({...formData, amount: e.target.value})}
-                                        className="w-full px-4 py-2 border rounded-lg"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                                    <select
-                                        value={formData.category}
-                                        onChange={(e) => setFormData({...formData, category: e.target.value})}
-                                        className="w-full px-4 py-2 border rounded-lg"
-                                    >
-                                        {categories.map(cat => (
-                                            <option key={cat} value={cat}>{cat}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={formData.description}
-                                        onChange={(e) => setFormData({...formData, description: e.target.value})}
-                                        className="w-full px-4 py-2 border rounded-lg"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                                    <input
-                                        type="date"
-                                        required
-                                        value={formData.date}
-                                        onChange={(e) => setFormData({...formData, date: e.target.value})}
-                                        className="w-full px-4 py-2 border rounded-lg"
-                                    />
-                                </div>
-                                
-                                {insuranceDeductibles.length > 0 && (
-                                    <div className="space-y-2">
-                                        <label className="flex items-center space-x-2">
-                                            <input
-                                                type="checkbox"
-                                                checked={formData.applyToDeductible}
-                                                onChange={(e) => setFormData({...formData, applyToDeductible: e.target.checked})}
-                                                className="rounded"
-                                            />
-                                            <span className="text-sm font-medium text-gray-700">Apply to insurance deductible</span>
-                                        </label>
-                                        
-                                        {formData.applyToDeductible && (
-                                            <select
-                                                value={formData.deductibleId}
-                                                onChange={(e) => setFormData({...formData, deductibleId: e.target.value})}
-                                                className="w-full px-4 py-2 border rounded-lg"
-                                            >
-                                                <option value="">Select deductible</option>
-                                                {insuranceDeductibles.map(d => (
-                                                    <option key={d.id} value={d.id}>
-                                                        {d.name} (${d.currentAmount} / ${d.totalAmount})
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        )}
-                                    </div>
-                                )}
-                                
-                                <button
-                                    type="submit"
-                                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
-                                >
-                                    Add Expense
-                                </button>
-                            </form>
+                const icon = CATEGORIES[category] || '📦';
+                const progressClass = progress.percentage < 80 ? 'low' : 
+                                    progress.percentage < 100 ? 'medium' : 'high';
+                
+                return `
+                    <div class="budget-item">
+                        <div class="budget-header">
+                            <div class="budget-category">
+                                <span>${icon}</span>
+                                <span>${category}</span>
+                            </div>
+                            <div class="budget-amounts">
+                                ${formatCurrency(progress.spent)} / ${formatCurrency(progress.budget)}
+                            </div>
                         </div>
-                    )}
-
-                    <div className="bg-white rounded-lg shadow overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200">
-                                    {expenses.slice().reverse().map(expense => (
-                                        <tr key={expense.id}>
-                                            <td className="px-6 py-4 text-sm text-gray-900">{expense.date}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">{expense.category}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">
-                                                {expense.description}
-                                                {expense.isRecurring && <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">🔄</span>}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-right font-medium text-red-600">
-                                                ${parseFloat(expense.amount).toFixed(2)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                        <div class="progress-bar">
+                            <div class="progress-fill ${progressClass}" style="width: ${progress.percentage}%"></div>
                         </div>
                     </div>
-                </div>
-            );
+                `;
+            }).join('');
         }
-
-        // Budget Manager Component (with Rollover feature)
-        function BudgetManager({ budgets, setBudgets, expenses, currentMonth }) {
-            const [showForm, setShowForm] = useState(false);
-            const [formData, setFormData] = useState({
-                category: 'Food',
-                amount: '',
-                enableRollover: false
+        
+        function updateDashboard() {
+            const currentMonth = getCurrentMonth();
+            const expenses = getExpensesByMonth(null, currentMonth);
+            const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
+            
+            // Calculate total budget
+            const totalBudget = Object.values(state.budgets).reduce((sum, b) => sum + (b.amount || 0), 0);
+            const budgetLeft = totalBudget - totalSpent;
+            const budgetUsedPct = totalBudget > 0 ? ((totalSpent / totalBudget) * 100).toFixed(0) : 0;
+            
+            // Update summary cards
+            document.getElementById('totalSpent').textContent = formatCurrency(totalSpent);
+            document.getElementById('budgetUsed').textContent = `${budgetUsedPct}%`;
+            document.getElementById('budgetLeft').textContent = formatCurrency(budgetLeft);
+            document.getElementById('monthName').textContent = getMonthName(currentMonth);
+            
+            // Update budget left color
+            const budgetLeftEl = document.getElementById('budgetLeft');
+            budgetLeftEl.className = 'summary-value ' + (budgetLeft >= 0 ? 'positive' : 'negative');
+        }
+        
+        // ===== EVENT HANDLERS =====
+        function handleAddExpense(e) {
+            e.preventDefault();
+            
+            const expense = {
+                amount: parseFloat(document.getElementById('expenseAmount').value),
+                description: document.getElementById('expenseDescription').value,
+                category: document.getElementById('expenseCategory').value,
+                date: document.getElementById('expenseDate').value
+            };
+            
+            // Add insurance subcategory if applicable
+            if (expense.category === 'Insurance') {
+                const subcategory = document.getElementById('insuranceSubcategory').value;
+                if (subcategory) {
+                    expense.insuranceSubcategory = subcategory;
+                }
+            }
+            
+            addExpense(expense);
+            closeModal('addExpenseModal');
+            document.getElementById('addExpenseForm').reset();
+        }
+        
+        function handleEditBudgets(e) {
+            e.preventDefault();
+            
+            const budgets = {};
+            Object.keys(CATEGORIES).forEach(category => {
+                const inputId = `budget${category}`;
+                const value = parseFloat(document.getElementById(inputId).value) || 0;
+                budgets[category] = {
+                    amount: value,
+                    rollover: false,
+                    rolloverBalance: 0
+                };
             });
-
-            const categories = ['Food', 'Transport', 'Shopping', 'Bills', 'Entertainment', 'Health', 'Other'];
-
-            const handleSubmit = (e) => {
-                e.preventDefault();
-                setBudgets({
-                    ...budgets,
-                    [formData.category]: {
-                        amount: parseFloat(formData.amount),
-                        enableRollover: formData.enableRollover,
-                        rolloverAmount: 0
+            
+            saveBudgets(budgets);
+            closeModal('editBudgetsModal');
+        }
+        
+        function handleExport() {
+            const dataStr = JSON.stringify(state, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `expenseflow-backup-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            showToast('Data exported successfully!');
+        }
+        
+        function handleImport() {
+            const input = document.getElementById('importFileInput');
+            input.click();
+        }
+        
+        function handleFileImport(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const imported = JSON.parse(event.target.result);
+                    if (confirm('This will replace all current data. Continue?')) {
+                        state = imported;
+                        saveData();
+                        location.reload();
+                    }
+                } catch (error) {
+                    alert('Error importing file. Please check the file format.');
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        function handleClearData() {
+            if (confirm('This will delete ALL data permanently. Are you sure?')) {
+                if (confirm('This action cannot be undone. Proceed?')) {
+                    localStorage.clear();
+                    location.reload();
+                }
+            }
+        }
+        
+        function handleCurrencyChange(e) {
+            state.settings.currency = e.target.value;
+            saveData();
+            renderExpenses();
+            renderBudgets();
+            updateDashboard();
+            showToast('Currency updated');
+        }
+        
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(`${tabName}Tab`).classList.add('active');
+            
+            // Update nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.tab === tabName) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+        
+        function handleFilterChange(e) {
+            if (!e.target.classList.contains('filter-tab')) return;
+            
+            // Update active filter
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            e.target.classList.add('active');
+            
+            state.currentFilter = e.target.dataset.filter;
+            renderExpenses();
+        }
+        
+        // ===== INITIALIZATION =====
+        function init() {
+            // Load data
+            loadData();
+            
+            // Set today's date as default
+            document.getElementById('expenseDate').valueAsDate = new Date();
+            
+            // Render initial state
+            renderExpenses();
+            renderBudgets();
+            updateDashboard();
+            
+            // Load budgets into edit form
+            Object.keys(CATEGORIES).forEach(category => {
+                const budget = state.budgets[category];
+                if (budget) {
+                    document.getElementById(`budget${category}`).value = budget.amount || '';
+                }
+            });
+            
+            // Load settings
+            document.getElementById('currencySelect').value = state.settings.currency;
+            
+            // Event listeners - Add Expense
+            document.getElementById('addExpenseBtn').addEventListener('click', () => {
+                openModal('addExpenseModal');
+            });
+            document.getElementById('addExpenseBtn2').addEventListener('click', () => {
+                openModal('addExpenseModal');
+            });
+            document.getElementById('addExpenseForm').addEventListener('submit', handleAddExpense);
+            
+            // Event listeners - Category change (show insurance subcategory)
+            document.getElementById('expenseCategory').addEventListener('change', (e) => {
+                const subcategoryGroup = document.getElementById('insuranceSubcategoryGroup');
+                if (e.target.value === 'Insurance') {
+                    subcategoryGroup.classList.add('active');
+                } else {
+                    subcategoryGroup.classList.remove('active');
+                }
+            });
+            
+            // Event listeners - Budgets
+            document.getElementById('setBudgetBtn').addEventListener('click', () => {
+                openModal('editBudgetsModal');
+            });
+            document.getElementById('editBudgetsBtn').addEventListener('click', () => {
+                openModal('editBudgetsModal');
+            });
+            document.getElementById('editBudgetsForm').addEventListener('submit', handleEditBudgets);
+            
+            // Event listeners - Quick Actions
+            document.getElementById('viewExpensesBtn').addEventListener('click', () => {
+                switchTab('expenses');
+            });
+            
+            // Event listeners - Settings
+            document.getElementById('exportBtn').addEventListener('click', handleExport);
+            document.getElementById('importBtn').addEventListener('click', handleImport);
+            document.getElementById('importFileInput').addEventListener('change', handleFileImport);
+            document.getElementById('clearDataBtn').addEventListener('click', handleClearData);
+            document.getElementById('currencySelect').addEventListener('change', handleCurrencyChange);
+            
+            // Event listeners - Navigation
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    switchTab(btn.dataset.tab);
+                });
+            });
+            
+            // Event listeners - Filter tabs
+            document.querySelector('.filter-tabs').addEventListener('click', handleFilterChange);
+            
+            // Close modals on overlay click
+            document.querySelectorAll('.modal-overlay').forEach(overlay => {
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) {
+                        overlay.classList.remove('active');
                     }
                 });
-                setFormData({ category: 'Food', amount: '', enableRollover: false });
-                setShowForm(false);
-            };
-
-            // Calculate rollover amounts
-            useEffect(() => {
-                const prevMonth = new Date(currentMonth);
-                prevMonth.setMonth(prevMonth.getMonth() - 1);
-                const prevMonthStr = prevMonth.toISOString().slice(0, 7);
-
-                const prevMonthExpenses = expenses.filter(e => e.date.startsWith(prevMonthStr));
-
-                categories.forEach(cat => {
-                    if (budgets[cat]?.enableRollover) {
-                        const spent = prevMonthExpenses
-                            .filter(e => e.category === cat)
-                            .reduce((sum, e) => sum + parseFloat(e.amount), 0);
-                        
-                        const budgetAmount = budgets[cat].amount;
-                        const rollover = Math.max(0, budgetAmount - spent);
-
-                        if (rollover > 0 && rollover !== budgets[cat].rolloverAmount) {
-                            setBudgets(prev => ({
-                                ...prev,
-                                [cat]: {
-                                    ...prev[cat],
-                                    rolloverAmount: rollover
-                                }
-                            }));
-                        }
-                    }
-                });
-            }, [currentMonth, expenses, budgets, categories]);
-
-            const monthExpenses = expenses.filter(e => e.date.startsWith(currentMonth));
-
-            return (
-                <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                        <h2 className="text-3xl font-bold text-gray-800">Budgets</h2>
-                        <button
-                            onClick={() => setShowForm(!showForm)}
-                            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-                        >
-                            {showForm ? 'Cancel' : '+ Set Budget'}
-                        </button>
-                    </div>
-
-                    {showForm && (
-                        <div className="bg-white p-6 rounded-lg shadow">
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                                    <select
-                                        value={formData.category}
-                                        onChange={(e) => setFormData({...formData, category: e.target.value})}
-                                        className="w-full px-4 py-2 border rounded-lg"
-                                    >
-                                        {categories.map(cat => (
-                                            <option key={cat} value={cat}>{cat}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Budget Amount</label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        required
-                                        value={formData.amount}
-                                        onChange={(e) => setFormData({...formData, amount: e.target.value})}
-                                        className="w-full px-4 py-2 border rounded-lg"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="flex items-center space-x-2">
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.enableRollover}
-                                            onChange={(e) => setFormData({...formData, enableRollover: e.target.checked})}
-                                            className="rounded"
-                                        />
-                                        <span className="text-sm font-medium text-gray-700">
-                                            Enable Rollover (carry unused budget to next month)
-                                        </span>
-                                    </label>
-                                </div>
-                                <button
-                                    type="submit"
-                                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
-                                >
-                                    Set Budget
-                                </button>
-                            </form>
-                        </div>
-                    )}
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {categories.map(cat => {
-                            const budget = budgets[cat];
-                            if (!budget) return null;
-
-                            const spent = monthExpenses
-                                .filter(e => e.category === cat)
-                                .reduce((sum, e) => sum + parseFloat(e.amount), 0);
-                            
-                            const totalBudget = budget.amount + (budget.rolloverAmount || 0);
-                            const percentage = (spent / totalBudget) * 100;
-
-                            return (
-                                <div key={cat} className="bg-white p-6 rounded-lg shadow">
-                                    <h3 className="text-lg font-bold mb-2">{cat}</h3>
-                                    <div className="space-y-2">
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600">Base Budget:</span>
-                                            <span className="font-medium">${budget.amount.toFixed(2)}</span>
-                                        </div>
-                                        {budget.enableRollover && budget.rolloverAmount > 0 && (
-                                            <div className="flex justify-between text-sm">
-                                                <span className="text-green-600">+ Rollover:</span>
-                                                <span className="font-medium text-green-600">
-                                                    ${budget.rolloverAmount.toFixed(2)}
-                                                </span>
-                                            </div>
-                                        )}
-                                        <div className="flex justify-between text-sm font-bold">
-                                            <span>Total Available:</span>
-                                            <span className="text-blue-600">${totalBudget.toFixed(2)}</span>
-                                        </div>
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600">Spent:</span>
-                                            <span className="font-medium text-red-600">${spent.toFixed(2)}</span>
-                                        </div>
-                                        <div className="flex justify-between text-sm font-bold">
-                                            <span>Remaining:</span>
-                                            <span className={totalBudget - spent >= 0 ? 'text-green-600' : 'text-red-600'}>
-                                                ${(totalBudget - spent).toFixed(2)}
-                                            </span>
-                                        </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-3 mt-3">
-                                            <div 
-                                                className={`h-3 rounded-full transition-all ${
-                                                    percentage > 100 ? 'bg-red-500' : 
-                                                    percentage > 80 ? 'bg-yellow-500' : 'bg-green-500'
-                                                }`}
-                                                style={{ width: `${Math.min(percentage, 100)}%` }}
-                                            />
-                                        </div>
-                                        <p className="text-xs text-gray-500 text-center mt-1">
-                                            {percentage.toFixed(1)}% used
-                                        </p>
-                                        {budget.enableRollover && (
-                                            <p className="text-xs text-blue-600 text-center mt-2">
-                                                🔄 Rollover enabled
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            );
-        }
-
-        // Recurring Manager Component
-        function RecurringManager({ recurring, addRecurring, setRecurringTransactions }) {
-            const [showForm, setShowForm] = useState(false);
-            const [formData, setFormData] = useState({
-                type: 'expense',
-                amount: '',
-                category: 'Bills',
-                description: '',
-                dayOfMonth: '1'
             });
-
-            const categories = ['Food', 'Transport', 'Shopping', 'Bills', 'Entertainment', 'Health', 'Other'];
-
-            const handleSubmit = (e) => {
-                e.preventDefault();
-                addRecurring({
-                    ...formData,
-                    dayOfMonth: parseInt(formData.dayOfMonth),
-                    amount: parseFloat(formData.amount)
-                });
-                setFormData({
-                    type: 'expense',
-                    amount: '',
-                    category: 'Bills',
-                    description: '',
-                    dayOfMonth: '1'
-                });
-                setShowForm(false);
-            };
-
-            const toggleActive = (id) => {
-                setRecurringTransactions(prev => prev.map(r =>
-                    r.id === id ? {...r, active: !r.active} : r
-                ));
-            };
-
-            return (
-                <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                        <h2 className="text-3xl font-bold text-gray-800">Recurring Transactions</h2>
-                        <button
-                            onClick={() => setShowForm(!showForm)}
-                            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-                        >
-                            {showForm ? 'Cancel' : '+ Add Recurring'}
-                        </button>
-                    </div>
-
-                    {showForm && (
-                        <div className="bg-white p-6 rounded-lg shadow">
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                                    <select
-                                        value={formData.type}
-                                        onChange={(e) => setFormData({...formData, type: e.target.value})}
-                                        className="w-full px-4 py-2 border rounded-lg"
-                                    >
-                                        <option value="expense">Expense</option>
-                                        <option value="income">Income</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        required
-                                        value={formData.amount}
-                                        onChange={(e) => setFormData({...formData, amount: e.target.value})}
-                                        className="w-full px-4 py-2 border rounded-lg"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                                    <select
-                                        value={formData.category}
-                                        onChange={(e) => setFormData({...formData, category: e.target.value})}
-                                        className="w-full px-4 py-2 border rounded-lg"
-                                    >
-                                        {categories.map(cat => (
-                                            <option key={cat} value={cat}>{cat}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={formData.description}
-                                        onChange={(e) => setFormData({...formData, description: e.target.value})}
-                                        className="w-full px-4 py-2 border rounded-lg"
-                                        placeholder="e.g., Netflix Subscription"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Day of Month (1-28)</label>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        max="28"
-                                        required
-                                        value={formData.dayOfMonth}
-                                        onChange={(e) => setFormData({...formData, dayOfMonth: e.target.value})}
-                                        className="w-full px-4 py-2 border rounded-lg"
-                                    />
-                                </div>
-                                <button
-                                    type="submit"
-                                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
-                                >
-                                    Add Recurring Transaction
-                                </button>
-                            </form>
-                        </div>
-                    )}
-
-                    <div className="bg-white rounded-lg shadow overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Day</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
-                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200">
-                                    {recurring.map(rec => (
-                                        <tr key={rec.id}>
-                                            <td className="px-6 py-4 text-sm">
-                                                <span className={`px-2 py-1 rounded ${
-                                                    rec.type === 'expense' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-                                                }`}>
-                                                    {rec.type}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">{rec.description}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">{rec.category}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">{rec.dayOfMonth}th</td>
-                                            <td className="px-6 py-4 text-sm text-right font-medium">
-                                                ${parseFloat(rec.amount).toFixed(2)}
-                                            </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <button
-                                                    onClick={() => toggleActive(rec.id)}
-                                                    className={`px-3 py-1 rounded text-sm ${
-                                                        rec.active 
-                                                            ? 'bg-green-100 text-green-800' 
-                                                            : 'bg-gray-100 text-gray-800'
-                                                    }`}
-                                                >
-                                                    {rec.active ? '✓ Active' : '✗ Paused'}
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            );
+            
+            console.log('ExpenseFlow v2.0 Phase 1 initialized!');
         }
-
-        // Insurance Manager Component
-        function InsuranceManager({ deductibles, addDeductible, setInsuranceDeductibles }) {
-            const [showForm, setShowForm] = useState(false);
-            const [formData, setFormData] = useState({
-                name: '',
-                totalAmount: '',
-                year: new Date().getFullYear().toString()
-            });
-
-            const handleSubmit = (e) => {
-                e.preventDefault();
-                addDeductible({
-                    ...formData,
-                    totalAmount: parseFloat(formData.totalAmount)
-                });
-                setFormData({
-                    name: '',
-                    totalAmount: '',
-                    year: new Date().getFullYear().toString()
-                });
-                setShowForm(false);
-            };
-
-            return (
-                <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                        <h2 className="text-3xl font-bold text-gray-800">Insurance Deductibles</h2>
-                        <button
-                            onClick={() => setShowForm(!showForm)}
-                            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-                        >
-                            {showForm ? 'Cancel' : '+ Add Deductible'}
-                        </button>
-                    </div>
-
-                    {showForm && (
-                        <div className="bg-white p-6 rounded-lg shadow">
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Insurance Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                        className="w-full px-4 py-2 border rounded-lg"
-                                        placeholder="e.g., Health Insurance 2026"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Total Deductible Amount
-                                    </label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        required
-                                        value={formData.totalAmount}
-                                        onChange={(e) => setFormData({...formData, totalAmount: e.target.value})}
-                                        className="w-full px-4 py-2 border rounded-lg"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
-                                    <input
-                                        type="number"
-                                        required
-                                        value={formData.year}
-                                        onChange={(e) => setFormData({...formData, year: e.target.value})}
-                                        className="w-full px-4 py-2 border rounded-lg"
-                                    />
-                                </div>
-                                <button
-                                    type="submit"
-                                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
-                                >
-                                    Add Deductible
-                                </button>
-                            </form>
-                        </div>
-                    )}
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {deductibles.map(ded => {
-                            const percentage = (ded.currentAmount / ded.totalAmount) * 100;
-                            const remaining = ded.totalAmount - ded.currentAmount;
-                            const isMet = ded.currentAmount >= ded.totalAmount;
-
-                            return (
-                                <div key={ded.id} className="bg-white p-6 rounded-lg shadow">
-                                    <h3 className="text-lg font-bold mb-3">{ded.name}</h3>
-                                    <div className="space-y-3">
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600">Total Deductible:</span>
-                                            <span className="font-medium">${ded.totalAmount.toFixed(2)}</span>
-                                        </div>
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600">Paid So Far:</span>
-                                            <span className="font-medium text-blue-600">
-                                                ${ded.currentAmount.toFixed(2)}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between text-sm font-bold">
-                                            <span>Remaining:</span>
-                                            <span className={isMet ? 'text-green-600' : 'text-orange-600'}>
-                                                ${remaining.toFixed(2)}
-                                            </span>
-                                        </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-4 mt-3">
-                                            <div 
-                                                className={`h-4 rounded-full transition-all ${
-                                                    isMet ? 'bg-green-500' : 'bg-blue-500'
-                                                }`}
-                                                style={{ width: `${Math.min(percentage, 100)}%` }}
-                                            />
-                                        </div>
-                                        <p className="text-xs text-gray-500 text-center mt-1">
-                                            {percentage.toFixed(1)}% met
-                                        </p>
-                                        {isMet && (
-                                            <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                                                <p className="text-sm text-green-800 text-center font-medium">
-                                                    ✓ Deductible Met! Insurance covers 100%
-                                                </p>
-                                            </div>
-                                        )}
-                                        {!isMet && remaining < ded.totalAmount * 0.2 && (
-                                            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                                <p className="text-sm text-blue-800 text-center">
-                                                    💡 Close to meeting deductible!
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    {deductibles.length === 0 && (
-                        <div className="bg-white p-12 rounded-lg shadow text-center">
-                            <p className="text-gray-500 text-lg">No insurance deductibles tracked yet.</p>
-                            <p className="text-gray-400 mt-2">Click "Add Deductible" to start tracking.</p>
-                        </div>
-                    )}
-                </div>
-            );
+        
+        // Start the app
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
         }
-
-        // Render the app
-        ReactDOM.render(<ExpenseTracker />, document.getElementById('root'));
     </script>
 </body>
 </html>
