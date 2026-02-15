@@ -391,12 +391,15 @@
             z-index: 1000;
             padding: var(--spacing-lg);
             overflow-y: auto;
+            overflow-x: hidden;
         }
         
         .modal-overlay.active {
             display: flex;
-            align-items: center;
+            align-items: flex-start; /* Changed from center to flex-start */
             justify-content: center;
+            padding-top: var(--spacing-xl); /* Add top padding so modal isn't flush with top */
+            padding-bottom: var(--spacing-xl); /* Add bottom padding */
         }
         
         .modal {
@@ -408,7 +411,9 @@
             width: 100%;
             box-shadow: var(--shadow-lg);
             position: relative;
-            margin: var(--spacing-lg) auto;
+            margin: auto; /* Center horizontally, allow natural vertical flow */
+            max-height: calc(100vh - 3rem); /* Prevent modal from being taller than viewport */
+            overflow-y: auto; /* Make modal itself scrollable if content is too long */
         }
         
         .modal-header {
@@ -781,6 +786,28 @@
             
             .summary-grid {
                 grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        /* Mobile Modal Fixes */
+        @media (max-width: 767px) {
+            .modal-overlay {
+                padding: var(--spacing-sm);
+            }
+            
+            .modal-overlay.active {
+                padding-top: var(--spacing-md);
+                padding-bottom: var(--spacing-md);
+            }
+            
+            .modal {
+                padding: var(--spacing-lg);
+                max-height: calc(100vh - 2rem);
+                border-radius: 8px;
+            }
+            
+            .modal-title {
+                font-size: var(--text-lg);
             }
         }
         
