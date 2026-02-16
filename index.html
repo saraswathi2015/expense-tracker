@@ -1717,6 +1717,16 @@
                     </div>
                 </div>
                 
+                <!-- Spending by Category Chart -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📊 Spending by Category</h2>
+                    </div>
+                    <div style="padding: var(--spacing-lg); max-width: 500px; margin: 0 auto;">
+                        <canvas id="categoryDonutChart"></canvas>
+                    </div>
+                </div>
+                
                 <!-- Upcoming Bills -->
                 <div class="card">
                     <div class="card-header">
@@ -1748,7 +1758,17 @@
                     <button class="filter-tab" data-filter="all">All Time</button>
                 </div>
                 
-                <div id="allExpensesList" class="expense-list">
+                <!-- 30-Day Spending Trend Chart -->
+                <div class="card" style="margin-top: var(--spacing-lg);">
+                    <div class="card-header">
+                        <h2 class="card-title">📈 30-Day Spending Trend</h2>
+                    </div>
+                    <div style="padding: var(--spacing-lg);">
+                        <canvas id="spendingLineChart"></canvas>
+                    </div>
+                </div>
+                
+                <div id="allExpensesList" class="expense-list" style="margin-top: var(--spacing-lg);">
                     <div class="empty-state">
                         <div class="empty-icon">💸</div>
                         <div class="empty-text">No expenses yet</div>
@@ -1930,31 +1950,6 @@
                     
                     <div id="taxBreakdown" style="display: none; margin-top: var(--spacing-lg);">
                         <!-- Tax breakdown will be inserted here -->
-                    </div>
-                </div>
-                
-                <!-- Charts Section -->
-                <div class="card mt-lg">
-                    <div class="card-header">
-                        <h2 class="card-title">📊 Spending Analysis</h2>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--spacing-xl); margin-top: var(--spacing-lg);">
-                        <!-- Donut Chart -->
-                        <div>
-                            <h3 style="font-size: var(--text-lg); margin-bottom: var(--spacing-md); color: var(--text-primary);">
-                                Spending by Category
-                            </h3>
-                            <canvas id="categoryDonutChart"></canvas>
-                        </div>
-                        
-                        <!-- Line Chart -->
-                        <div>
-                            <h3 style="font-size: var(--text-lg); margin-bottom: var(--spacing-md); color: var(--text-primary);">
-                                30-Day Spending Trend
-                            </h3>
-                            <canvas id="spendingLineChart"></canvas>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -3072,6 +3067,7 @@
                 state.expenses = state.expenses.filter(e => e.id !== id);
                 saveData();
                 renderExpenses();
+                renderBudgets(); // Update budget display
                 updateDashboard();
                 showToast('Expense deleted');
             }
@@ -3088,8 +3084,10 @@
             
             // Handle insurance subcategory if applicable
             if (expense.category === 'Insurance' && expense.insuranceSubcategory) {
-                document.getElementById('insuranceSubcategory').value = expense.insuranceSubcategory;
-                document.getElementById('insuranceSubcategoryGroup').classList.add('active');
+                const subcatValue = document.getElementById('insuranceSubcategory');
+                const subcatGroup = document.getElementById('insuranceSubcategoryGroup');
+                if (subcatValue) subcatValue.value = expense.insuranceSubcategory;
+                if (subcatGroup) subcatGroup.classList.add('active');
             }
             
             document.getElementById('addExpenseForm').dataset.editId = id;
@@ -3235,7 +3233,8 @@
                 document.getElementById('debtPromoStart').value = debt.promoStartDate;
                 document.getElementById('debtPromoEnd').value = debt.promoEndDate;
                 document.getElementById('debtPostPromoAPR').value = debt.postPromoAPR;
-                document.getElementById('promoDetailsGroup').classList.add('active');
+                const promoGroup = document.getElementById('promoDetailsGroup');
+                if (promoGroup) promoGroup.classList.add('active');
             }
             
             document.getElementById('addDebtForm').dataset.editId = id;
@@ -4974,6 +4973,7 @@
                     state.expenses[index] = { ...state.expenses[index], ...expense };
                     saveData();
                     renderExpenses();
+                    renderBudgets(); // Update budget display
                     updateDashboard();
                     showToast('Expense updated!');
                 }
@@ -4985,6 +4985,7 @@
                 const insurancePlanId = document.getElementById('insurancePlanSelect').value;
                 
                 addExpense(expense);
+                renderBudgets(); // Update budget display
                 
                 // Apply to insurance deductible if selected
                 if (applyToDeductibleChecked && insurancePlanId) {
@@ -5338,8 +5339,8 @@
                 }
             });
             
-            // Re-render charts when switching to Wealth tab
-            if (tabName === 'wealth') {
+            // Re-render charts when switching to tabs with charts
+            if (tabName === 'home' || tabName === 'expenses') {
                 setTimeout(() => renderCharts(), 100);
             }
         }
@@ -5439,18 +5440,20 @@
                 const deductibleGroup = document.getElementById('insuranceDeductibleGroup');
                 
                 if (e.target.value === 'Insurance') {
-                    subcategoryGroup.classList.add('active');
+                    if (subcategoryGroup) subcategoryGroup.classList.add('active');
                 } else {
-                    subcategoryGroup.classList.remove('active');
+                    if (subcategoryGroup) subcategoryGroup.classList.remove('active');
                 }
                 
                 // Show deductible option for Health category
                 if (e.target.value === 'Health') {
-                    deductibleGroup.classList.add('active');
+                    if (deductibleGroup) deductibleGroup.classList.add('active');
                 } else {
-                    deductibleGroup.classList.remove('active');
-                    document.getElementById('applyToDeductible').checked = false;
-                    document.getElementById('insurancePlanSelectGroup').style.display = 'none';
+                    if (deductibleGroup) deductibleGroup.classList.remove('active');
+                    const applyCheckbox = document.getElementById('applyToDeductible');
+                    if (applyCheckbox) applyCheckbox.checked = false;
+                    const planSelectGroup = document.getElementById('insurancePlanSelectGroup');
+                    if (planSelectGroup) planSelectGroup.style.display = 'none';
                 }
             });
             
@@ -5483,10 +5486,12 @@
             // Event listeners - Debt promo toggle (show/hide promo fields)
             document.getElementById('debtHasPromo').addEventListener('change', (e) => {
                 const promoGroup = document.getElementById('promoDetailsGroup');
-                if (e.target.checked) {
-                    promoGroup.classList.add('active');
-                } else {
-                    promoGroup.classList.remove('active');
+                if (promoGroup) {
+                    if (e.target.checked) {
+                        promoGroup.classList.add('active');
+                    } else {
+                        promoGroup.classList.remove('active');
+                    }
                 }
             });
             
