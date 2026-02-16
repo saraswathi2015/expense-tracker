@@ -2132,6 +2132,26 @@
                     <input type="date" class="form-input" id="expenseDate" required>
                 </div>
                 
+                <div class="form-group">
+                    <label class="form-label">Payment Method</label>
+                    <select class="form-select" id="expensePaymentMethod" required>
+                        <option value="">Select payment method</option>
+                        <option value="cash">💵 Cash</option>
+                        <option value="debit">💳 Debit Card</option>
+                        <option value="credit">💳 Credit Card</option>
+                    </select>
+                </div>
+                
+                <div class="form-group subcategory-group" id="creditCardSelectGroup">
+                    <label class="form-label">Select Credit Card</label>
+                    <select class="form-select" id="expenseCreditCard">
+                        <option value="">Select credit card...</option>
+                    </select>
+                    <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
+                        💡 Balance will be automatically increased
+                    </div>
+                </div>
+                
                 <div class="form-group subcategory-group" id="insuranceDeductibleGroup">
                     <div class="toggle-container">
                         <label class="toggle-switch">
@@ -3067,7 +3087,7 @@
             saveData();
             renderExpenses();
             updateDashboard();
-            showToast('Expense added successfully!');
+            // Toast moved to handler to customize message
         }
         
         function deleteExpense(id) {
@@ -3089,6 +3109,21 @@
             document.getElementById('expenseDescription').value = expense.description;
             document.getElementById('expenseCategory').value = expense.category;
             document.getElementById('expenseDate').value = expense.date;
+            
+            // Set payment method
+            if (expense.paymentMethod) {
+                document.getElementById('expensePaymentMethod').value = expense.paymentMethod;
+                
+                // If credit card, populate and select it
+                if (expense.paymentMethod === 'credit') {
+                    populateCreditCardSelect();
+                    const creditCardGroup = document.getElementById('creditCardSelectGroup');
+                    if (creditCardGroup) creditCardGroup.classList.add('active');
+                    if (expense.creditCardId) {
+                        document.getElementById('expenseCreditCard').value = expense.creditCardId;
+                    }
+                }
+            }
             
             // Handle insurance subcategory if applicable
             if (expense.category === 'Insurance' && expense.insuranceSubcategory) {
@@ -3441,6 +3476,35 @@
                 option.textContent = `${ins.name} (${ins.type})`;
                 select.appendChild(option);
             });
+        }
+        
+        function populateCreditCardSelect() {
+            const select = document.getElementById('expenseCreditCard');
+            if (!select) return;
+            
+            // Get only credit card debts (not loans/mortgages)
+            const creditCards = state.debts.filter(d => 
+                d.name.toLowerCase().includes('card') || 
+                d.name.toLowerCase().includes('credit') ||
+                d.apr !== undefined
+            );
+            
+            select.innerHTML = '<option value="">Select credit card...</option>';
+            creditCards.forEach(card => {
+                const option = document.createElement('option');
+                option.value = card.id;
+                option.textContent = `${card.name} (Balance: ${formatCurrency(card.balance)})`;
+                select.appendChild(option);
+            });
+            
+            // If no credit cards, show message
+            if (creditCards.length === 0) {
+                const option = document.createElement('option');
+                option.value = "";
+                option.textContent = "No credit cards in Debts tab";
+                option.disabled = true;
+                select.appendChild(option);
+            }
         }
         
         // ===== RECURRING TRANSACTIONS FUNCTIONS =====
@@ -3933,6 +3997,8 @@
                 case 'manual':
                     // Set default date to today
                     document.getElementById('expenseDate').value = getTodayLocalDate();
+                    // Populate credit card list
+                    populateCreditCardSelect();
                     openModal('addExpenseModal');
                     break;
                 case 'scan':
@@ -4422,6 +4488,25 @@
                 ? `${expense.description} (${expense.insuranceSubcategory})`
                 : expense.description;
             
+            // Payment method icon
+            let paymentIcon = '';
+            let paymentText = '';
+            if (expense.paymentMethod === 'cash') {
+                paymentIcon = '💵';
+                paymentText = 'Cash';
+            } else if (expense.paymentMethod === 'debit') {
+                paymentIcon = '💳';
+                paymentText = 'Debit';
+            } else if (expense.paymentMethod === 'credit') {
+                paymentIcon = '💳';
+                if (expense.creditCardId) {
+                    const card = state.debts.find(d => d.id === expense.creditCardId);
+                    paymentText = card ? card.name : 'Credit';
+                } else {
+                    paymentText = 'Credit';
+                }
+            }
+            
             return `
                 <div class="expense-item">
                     <div class="expense-info">
@@ -4430,7 +4515,7 @@
                             <span class="expense-description">${description}</span>
                         </div>
                         <div class="expense-meta">
-                            ${expense.category} • ${formatDate(expense.date)}
+                            ${expense.category} • ${formatDate(expense.date)}${paymentIcon ? ` • ${paymentIcon} ${paymentText}` : ''}
                         </div>
                     </div>
                     <div class="expense-amount">${formatCurrency(expense.amount)}</div>
@@ -4965,8 +5050,17 @@
                 amount: parseFloat(document.getElementById('expenseAmount').value),
                 description: document.getElementById('expenseDescription').value,
                 category: document.getElementById('expenseCategory').value,
-                date: document.getElementById('expenseDate').value
+                date: document.getElementById('expenseDate').value,
+                paymentMethod: document.getElementById('expensePaymentMethod').value
             };
+            
+            // Add credit card ID if paid with credit
+            if (expense.paymentMethod === 'credit') {
+                const cardId = document.getElementById('expenseCreditCard').value;
+                if (cardId) {
+                    expense.creditCardId = parseInt(cardId);
+                }
+            }
             
             // Add insurance subcategory if applicable
             if (expense.category === 'Insurance') {
@@ -4990,12 +5084,25 @@
                 delete form.dataset.editId;
             } else {
                 // Add new expense
+                addExpense(expense);
+                renderBudgets(); // Update budget display
+                
+                // Update credit card balance if paid with credit
+                if (expense.paymentMethod === 'credit' && expense.creditCardId) {
+                    const card = state.debts.find(d => d.id === expense.creditCardId);
+                    if (card) {
+                        card.balance += expense.amount;
+                        saveData();
+                        renderDebts();
+                        showToast(`✅ Expense added & ${card.name} balance updated!`);
+                    }
+                } else {
+                    showToast('✅ Expense added!');
+                }
+                
                 // Check if applying to insurance deductible
                 const applyToDeductibleChecked = document.getElementById('applyToDeductible').checked;
                 const insurancePlanId = document.getElementById('insurancePlanSelect').value;
-                
-                addExpense(expense);
-                renderBudgets(); // Update budget display
                 
                 // Apply to insurance deductible if selected
                 if (applyToDeductibleChecked && insurancePlanId) {
@@ -5446,6 +5553,19 @@
                 showAddOptions(); // Phase 7: Show options modal instead
             });
             document.getElementById('addExpenseForm').addEventListener('submit', handleAddExpense);
+            
+            // Event listeners - Payment method change (show credit card selector)
+            document.getElementById('expensePaymentMethod').addEventListener('change', (e) => {
+                const creditCardGroup = document.getElementById('creditCardSelectGroup');
+                if (e.target.value === 'credit') {
+                    if (creditCardGroup) {
+                        populateCreditCardSelect();
+                        creditCardGroup.classList.add('active');
+                    }
+                } else {
+                    if (creditCardGroup) creditCardGroup.classList.remove('active');
+                }
+            });
             
             // Event listeners - Category change (show insurance subcategory)
             document.getElementById('expenseCategory').addEventListener('change', (e) => {
