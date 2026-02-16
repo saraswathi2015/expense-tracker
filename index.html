@@ -2995,6 +2995,14 @@
             return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
         }
         
+        function getTodayLocalDate() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
         function formatCurrency(amount) {
             return `${state.settings.currency}${Math.abs(amount).toFixed(2)}`;
         }
@@ -3923,6 +3931,8 @@
             
             switch(method) {
                 case 'manual':
+                    // Set default date to today
+                    document.getElementById('expenseDate').value = getTodayLocalDate();
                     openModal('addExpenseModal');
                     break;
                 case 'scan':
@@ -5393,8 +5403,11 @@
                 saveData();
             }
             
-            // Set today's date as default
-            document.getElementById('expenseDate').valueAsDate = new Date();
+            // Set today's date as default for date inputs (using local timezone)
+            const today = getTodayLocalDate();
+            document.getElementById('expenseDate').value = today;
+            document.getElementById('recurringStartDate').value = today;
+            document.getElementById('incomeDate').value = today;
             
             // Render initial state
             renderExpenses();
