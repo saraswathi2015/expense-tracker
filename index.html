@@ -2113,6 +2113,42 @@
                     </select>
                 </div>
                 
+                <div class="form-group subcategory-group" id="detailedSubcategoryGroup">
+                    <label class="form-label">Subcategory</label>
+                    <select class="form-select" id="expenseSubcategory">
+                        <option value="">Select subcategory...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group subcategory-group" id="detailedItemGroup">
+                    <label class="form-label">Item / Product</label>
+                    <select class="form-select" id="expenseItem">
+                        <option value="">Select item...</option>
+                    </select>
+                    <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
+                        Or enter custom item below
+                    </div>
+                    <input type="text" class="form-input" id="expenseItemCustom" placeholder="Enter custom item (optional)" style="margin-top: var(--spacing-xs);">
+                </div>
+                
+                <div class="form-group subcategory-group" id="storeSelectGroup">
+                    <label class="form-label">Store / Merchant</label>
+                    <select class="form-select" id="expenseStoreCategory">
+                        <option value="">Select store type...</option>
+                        <option value="US Supermarkets">🛒 US Supermarkets</option>
+                        <option value="Indian Grocery">🌾 Indian Grocery</option>
+                        <option value="Meat/Seafood">🍖 Meat/Seafood</option>
+                        <option value="Online">📦 Online Shopping</option>
+                        <option value="Restaurants">🍽️ Restaurants</option>
+                        <option value="Clothing Stores">👔 Clothing Stores</option>
+                        <option value="Other">📍 Other</option>
+                    </select>
+                    <select class="form-select" id="expenseStore" style="margin-top: var(--spacing-sm);">
+                        <option value="">Select store...</option>
+                    </select>
+                    <input type="text" class="form-input" id="expenseStoreCustom" placeholder="Or enter custom store name" style="margin-top: var(--spacing-xs);">
+                </div>
+                
                 <div class="form-group subcategory-group" id="insuranceSubcategoryGroup">
                     <label class="form-label">Insurance Type</label>
                     <select class="form-select" id="insuranceSubcategory">
@@ -2988,6 +3024,90 @@
             'Other': '📦'
         };
         
+        // DETAILED SUBCATEGORIES & ITEMS
+        const DETAILED_CATEGORIES = {
+            'Food': {
+                'Vegetables': ['Banana green', 'Baby Corn', 'Beans', 'Beans flat', 'Beet root', 'Cabbage', 'Carrots', 'Cauliflower', 'Chayote (chow chow)', 'Chilli', 'Cilantro (Kothamalli)', 'Corn', 'Curry leaves', 'Desi long squash (sorakka)', 'Garlic', 'Ginger', 'Grated coconut', 'Lemon', 'Mint', 'Okra (ladys finger)', 'Panneer', 'Peanut', 'Potato', 'Potato loose', 'Raddish', 'Round egg plant', 'Red Onion', 'Small chilli', 'Tindora (kovaka)', 'Tomato', 'Yellow onion', 'White potato', 'Other vegetable'],
+                'Fruits': ['Apple', 'Banana organic', 'Black grapes', 'Pomegranate', 'Orange', 'Grapes', 'Mango', 'Other fruit'],
+                'Essential': ['Milk', 'Curd', 'Eggs', 'Butter', 'Yogurt', 'Bread', 'Other essential'],
+                'Groceries': ['Anand parotta', 'Phulka', 'Almond', 'Alya org dates', 'Anil semiya', 'Bay leaves', 'Besan canada (kalla mavu)', 'Black pepper whole', 'Bru', 'Cascade gel', 'Cashew whole', 'Chana Dal (kalla parppu)', 'Chana Dalia (pottukadalai)', 'Cheese', 'Chilli whole', 'Chings dark soy sauce', 'Chings green chilli sauce', 'Chings red chilli sauce', 'Close up', 'Coconut oil', 'Corn flour', 'Coriander seed (malli)', 'Crystal salt', 'Cumin seeds (Jeeragam)', 'Fennel seeds (sombu)', 'Golden raisin', 'GRB ghee', 'Green patani', 'Heinz ketchup', 'Idhayam sesame oil', 'Oil - veg', 'Jaggery', 'Kabuli Channa (white kondakadalai)', 'Kala Channa (brown kondakadalai)', 'Kissan mixed fruit jam', 'LG asfoetida', 'Maggi', 'Maida', 'Mayonnaise', 'Methi seeds (venthayam)', 'Moong dal half (pasi payiru)', 'Moong Whole (pacha payiru)', 'Mustard seeds (kadugu)', 'Oats', 'Pasta', 'Palmolive', 'Poha', 'Powder salt', 'Priya Mango Ginger Pickle', 'Rava', 'Raw peanut', 'Rice Flour', 'Society masala tea', 'Soya chunks', 'Spice mix', 'Toor Dal', 'Tamarind', 'Tukmaria (Sabja seeds)', 'Turmeric powder', 'Urad dal (ulunthu)', 'Walnut', 'Ashirvad wheat flour', 'Other grocery'],
+                'Rice': ['Basmati', 'Ponni boiled rice', 'Ponni Raw rice', 'Idly rice', 'Other rice'],
+                'Pooja Items': ['Matchbox', 'Camphor', 'Agarbatti', 'Sambrani', 'Other pooja item'],
+                'Snacks': ['Cashew cookie', 'Britannia waf vanila', 'Chewy bar', 'Chips', 'Buttermilk', 'Britannia Milk Bikis cream', 'Britannia GD Chunki', 'Ice cream', 'Kanaiya Peanut', 'KCB rusk', 'KCB veg cake rusk', 'Lays', 'Little hearts', 'Marie gold', 'Masala Mirchi corn', 'Muruku', 'Parle Fab', 'Parle', 'Shan custard strawberry powder', 'Tanjore mixture', 'Vadilal', 'Vadilal Ice Cream (Alph Mango)', 'Vadilal Ice Cream (kaju Draksh)', 'Vadilal Mango Shot', 'Vadilal samosa', 'White bread', 'Karachi Cashew cookies', 'Drumsticks (cone ice)', 'Choco rugelac', 'Other snack'],
+                'Non-Veg': ['Chicken', 'Mutton', 'Snapper', 'Kingfish', 'Shrimp', 'Fish', 'Other meat'],
+                'Restaurant/Dining': ['Fast food', 'Casual dining', 'Fine dining', 'Cafe', 'Food delivery', 'Other dining']
+            },
+            'Shopping': {
+                'Clothing - Men': ['Shirt', 'T-shirt', 'Pants', 'Jeans', 'Shorts', 'Jacket', 'Sweater', 'Suit', 'Ethnic wear', 'Innerwear', 'Socks', 'Other men clothing'],
+                'Clothing - Women': ['Saree', 'Churidar', 'Salwar', 'Lehenga', 'Blouse', 'Dress', 'Skirt', 'Jeans', 'Top', 'Jacket', 'Sweater', 'Innerwear', 'Other women clothing'],
+                'Clothing - Kids': ['Shirt', 'T-shirt', 'Pants', 'Dress', 'Shorts', 'Jacket', 'School uniform', 'Ethnic wear', 'Innerwear', 'Other kids clothing'],
+                'Footwear - Men': ['Formal shoes', 'Casual shoes', 'Sneakers', 'Sandals', 'Chappals', 'Boots', 'Other footwear'],
+                'Footwear - Women': ['Heels', 'Flats', 'Sandals', 'Chappals', 'Sneakers', 'Boots', 'Other footwear'],
+                'Footwear - Kids': ['School shoes', 'Sneakers', 'Sandals', 'Chappals', 'Other footwear'],
+                'Accessories': ['Watch', 'Belt', 'Wallet', 'Bag', 'Purse', 'Jewelry', 'Sunglasses', 'Hat', 'Scarf', 'Tie', 'Other accessory'],
+                'Electronics': ['Phone', 'Laptop', 'Tablet', 'Headphones', 'Charger', 'Cable', 'Power bank', 'Smart watch', 'Other electronics'],
+                'Home & Kitchen': ['Utensils', 'Cookware', 'Storage containers', 'Appliances', 'Furniture', 'Decor', 'Bedding', 'Towels', 'Other home item'],
+                'Personal Care': ['Shampoo', 'Soap', 'Toothpaste', 'Cosmetics', 'Skincare', 'Haircare', 'Other personal care'],
+                'General Shopping': ['Other shopping item']
+            },
+            'Education': {
+                'School Supplies': ['Notebooks', 'Pens', 'Pencils', 'Erasers', 'Rulers', 'Crayons', 'Colors', 'Art supplies', 'Backpack', 'Lunch box', 'Water bottle', 'Other school supply'],
+                'Books': ['Textbooks', 'Workbooks', 'Reference books', 'Story books', 'Other books'],
+                'Tuition/Classes': ['School fees', 'Tuition', 'Music classes', 'Dance classes', 'Sports coaching', 'Other classes'],
+                'Online Courses': ['Udemy', 'Coursera', 'Other online course'],
+                'Other Education': ['Other education expense']
+            },
+            'Transport': {
+                'Fuel': ['Gas', 'Diesel', 'Other fuel'],
+                'Public Transport': ['Bus', 'Train', 'Subway', 'Ferry', 'Other transport'],
+                'Ride Share': ['Uber', 'Lyft', 'Ola', 'Other ride share'],
+                'Parking': ['Parking fee', 'Toll', 'Other parking'],
+                'Vehicle Maintenance': ['Oil change', 'Car wash', 'Tire', 'Repair', 'Other maintenance'],
+                'Other Transport': ['Other transport expense']
+            },
+            'Entertainment': {
+                'Movies/Shows': ['Movie ticket', 'Netflix', 'Prime Video', 'Disney+', 'Hulu', 'Other streaming'],
+                'Games/Hobbies': ['Video games', 'Board games', 'Hobby supplies', 'Other games'],
+                'Events': ['Concert', 'Sports event', 'Theater', 'Other event'],
+                'Outdoor Activities': ['Park entry', 'Zoo', 'Museum', 'Other activity'],
+                'Other Entertainment': ['Other entertainment']
+            },
+            'Health': {
+                'Doctor Visits': ['General checkup', 'Specialist', 'Urgent care', 'Other visit'],
+                'Medicines': ['Prescription', 'OTC medicine', 'Supplements', 'Other medicine'],
+                'Lab Tests': ['Blood test', 'X-ray', 'Scan', 'Other test'],
+                'Fitness': ['Gym membership', 'Yoga class', 'Sports equipment', 'Other fitness'],
+                'Other Health': ['Other health expense']
+            },
+            'Bills': {
+                'Utilities': ['Electricity', 'Water', 'Gas', 'Internet', 'Phone', 'Other utility'],
+                'Subscriptions': ['Spotify', 'YouTube Premium', 'News', 'Cloud storage', 'Other subscription'],
+                'Other Bills': ['Other bill']
+            },
+            'Housing': {
+                'Rent/Mortgage': ['Monthly rent', 'Mortgage payment', 'Other housing payment'],
+                'Maintenance': ['Repairs', 'Cleaning', 'Lawn care', 'Other maintenance'],
+                'Other Housing': ['Other housing expense']
+            },
+            'Family': {
+                'Gifts': ['Birthday gift', 'Anniversary gift', 'Festival gift', 'Other gift'],
+                'Support': ['Family support', 'Remittance', 'Other support'],
+                'Childcare': ['Daycare', 'Babysitter', 'Other childcare'],
+                'Other Family': ['Other family expense']
+            }
+        };
+        
+        // STORES
+        const STORES = {
+            'US Supermarkets': ['Costco', 'Walmart', 'Target', 'ShopRite', 'Whole Foods', 'Trader Joes', 'Stop & Shop', 'Wegmans', 'Aldi', 'Lidl', 'Safeway', 'Kroger', 'Publix', 'Amazon Fresh', 'Other US store'],
+            'Indian Grocery': ['Patel Brothers', 'IGO', 'Subzi Mandi', 'India Bazaar', 'Apna Bazaar', 'Patel Cash & Carry', 'Other Indian store'],
+            'Meat/Seafood': ['Edison Halal', 'Dey Farm', 'H Mart', 'Whole Foods Butcher', 'Local butcher', 'Other meat shop'],
+            'Online': ['Amazon', 'Walmart Online', 'Target Online', 'Instacart', 'Other online'],
+            'Restaurants': ['Fast food', 'Casual dining', 'Fine dining', 'Food delivery', 'Other restaurant'],
+            'Clothing Stores': ['Macys', 'Kohls', 'Target', 'Old Navy', 'Gap', 'Uniqlo', 'H&M', 'Zara', 'Other clothing store'],
+            'Other': ['Other store']
+        };
+        
         const INSURANCE_SUBCATEGORIES = [
             'Medical', 'Dental', 'Vision', 'Auto', 'Home', 'Life', 'Disability'
         ];
@@ -3505,6 +3625,75 @@
                 option.disabled = true;
                 select.appendChild(option);
             }
+        }
+        
+        function populateSubcategories(category) {
+            const subcatSelect = document.getElementById('expenseSubcategory');
+            const subcatGroup = document.getElementById('detailedSubcategoryGroup');
+            
+            if (!subcatSelect || !DETAILED_CATEGORIES[category]) {
+                if (subcatGroup) subcatGroup.classList.remove('active');
+                return;
+            }
+            
+            // Clear and populate subcategories
+            subcatSelect.innerHTML = '<option value="">Select subcategory...</option>';
+            const subcategories = Object.keys(DETAILED_CATEGORIES[category]);
+            
+            subcategories.forEach(subcat => {
+                const option = document.createElement('option');
+                option.value = subcat;
+                option.textContent = subcat;
+                subcatSelect.appendChild(option);
+            });
+            
+            if (subcategories.length > 0) {
+                subcatGroup.classList.add('active');
+            }
+        }
+        
+        function populateItems(category, subcategory) {
+            const itemSelect = document.getElementById('expenseItem');
+            const itemGroup = document.getElementById('detailedItemGroup');
+            
+            if (!itemSelect || !DETAILED_CATEGORIES[category] || !DETAILED_CATEGORIES[category][subcategory]) {
+                if (itemGroup) itemGroup.classList.remove('active');
+                return;
+            }
+            
+            // Clear and populate items
+            itemSelect.innerHTML = '<option value="">Select item...</option>';
+            const items = DETAILED_CATEGORIES[category][subcategory];
+            
+            items.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item;
+                option.textContent = item;
+                itemSelect.appendChild(option);
+            });
+            
+            if (items.length > 0) {
+                itemGroup.classList.add('active');
+            }
+        }
+        
+        function populateStores(storeCategory) {
+            const storeSelect = document.getElementById('expenseStore');
+            
+            if (!storeSelect || !STORES[storeCategory]) {
+                return;
+            }
+            
+            // Clear and populate stores
+            storeSelect.innerHTML = '<option value="">Select store...</option>';
+            const stores = STORES[storeCategory];
+            
+            stores.forEach(store => {
+                const option = document.createElement('option');
+                option.value = store;
+                option.textContent = store;
+                storeSelect.appendChild(option);
+            });
         }
         
         // ===== RECURRING TRANSACTIONS FUNCTIONS =====
@@ -4513,9 +4702,38 @@
         
         function createExpenseHTML(expense) {
             const icon = CATEGORIES[expense.category] || '📦';
-            const description = expense.insuranceSubcategory 
-                ? `${expense.description} (${expense.insuranceSubcategory})`
-                : expense.description;
+            
+            // Build description with detailed info
+            let description = expense.description;
+            let detailsLine = [];
+            
+            // Add subcategory and item if available
+            if (expense.subcategory) {
+                detailsLine.push(expense.subcategory);
+            }
+            if (expense.item) {
+                detailsLine.push(expense.item);
+            } else if (expense.itemCustom) {
+                detailsLine.push(expense.itemCustom);
+            }
+            
+            // Build final description
+            if (expense.insuranceSubcategory) {
+                description = `${expense.description} (${expense.insuranceSubcategory})`;
+            } else if (detailsLine.length > 0) {
+                description = detailsLine.join(' - ');
+                if (expense.description && expense.description !== detailsLine[0]) {
+                    description = `${expense.description} (${detailsLine.join(' - ')})`;
+                }
+            }
+            
+            // Store info
+            let storeInfo = '';
+            if (expense.store) {
+                storeInfo = ` @ ${expense.store}`;
+            } else if (expense.storeCustom) {
+                storeInfo = ` @ ${expense.storeCustom}`;
+            }
             
             // Payment method icon
             let paymentIcon = '';
@@ -4541,7 +4759,7 @@
                     <div class="expense-info">
                         <div class="expense-header">
                             <span class="expense-category-icon">${icon}</span>
-                            <span class="expense-description">${description}</span>
+                            <span class="expense-description">${description}${storeInfo}</span>
                         </div>
                         <div class="expense-meta">
                             ${expense.category} • ${formatDate(expense.date)}${paymentIcon ? ` • ${paymentIcon} ${paymentText}` : ''}
@@ -5099,6 +5317,21 @@
                 }
             }
             
+            // Add detailed tracking fields
+            const subcategory = document.getElementById('expenseSubcategory').value;
+            const item = document.getElementById('expenseItem').value;
+            const itemCustom = document.getElementById('expenseItemCustom').value.trim();
+            const storeCategory = document.getElementById('expenseStoreCategory').value;
+            const store = document.getElementById('expenseStore').value;
+            const storeCustom = document.getElementById('expenseStoreCustom').value.trim();
+            
+            if (subcategory) expense.subcategory = subcategory;
+            if (item) expense.item = item;
+            if (itemCustom) expense.itemCustom = itemCustom;
+            if (storeCategory) expense.storeCategory = storeCategory;
+            if (store) expense.store = store;
+            if (storeCustom) expense.storeCustom = storeCustom;
+            
             if (editId) {
                 // Update existing expense
                 const index = state.expenses.findIndex(e => e.id === parseInt(editId));
@@ -5596,19 +5829,22 @@
                 }
             });
             
-            // Event listeners - Category change (show insurance subcategory)
+            // Event listeners - Category change (show insurance subcategory and detailed tracking)
             document.getElementById('expenseCategory').addEventListener('change', (e) => {
+                const category = e.target.value;
                 const subcategoryGroup = document.getElementById('insuranceSubcategoryGroup');
                 const deductibleGroup = document.getElementById('insuranceDeductibleGroup');
+                const storeGroup = document.getElementById('storeSelectGroup');
                 
-                if (e.target.value === 'Insurance') {
+                // Handle insurance subcategory
+                if (category === 'Insurance') {
                     if (subcategoryGroup) subcategoryGroup.classList.add('active');
                 } else {
                     if (subcategoryGroup) subcategoryGroup.classList.remove('active');
                 }
                 
                 // Show deductible option for Health category
-                if (e.target.value === 'Health') {
+                if (category === 'Health') {
                     if (deductibleGroup) deductibleGroup.classList.add('active');
                 } else {
                     if (deductibleGroup) deductibleGroup.classList.remove('active');
@@ -5616,6 +5852,39 @@
                     if (applyCheckbox) applyCheckbox.checked = false;
                     const planSelectGroup = document.getElementById('insurancePlanSelectGroup');
                     if (planSelectGroup) planSelectGroup.style.display = 'none';
+                }
+                
+                // Populate detailed subcategories if available
+                if (DETAILED_CATEGORIES[category]) {
+                    populateSubcategories(category);
+                    // Show store selector for relevant categories
+                    if (storeGroup && (category === 'Food' || category === 'Shopping')) {
+                        storeGroup.classList.add('active');
+                    }
+                } else {
+                    // Hide detailed tracking for categories without subcategories
+                    const detailedSubcatGroup = document.getElementById('detailedSubcategoryGroup');
+                    const detailedItemGroup = document.getElementById('detailedItemGroup');
+                    if (detailedSubcatGroup) detailedSubcatGroup.classList.remove('active');
+                    if (detailedItemGroup) detailedItemGroup.classList.remove('active');
+                    if (storeGroup) storeGroup.classList.remove('active');
+                }
+            });
+            
+            // Event listener - Subcategory change (populate items)
+            document.getElementById('expenseSubcategory').addEventListener('change', (e) => {
+                const category = document.getElementById('expenseCategory').value;
+                const subcategory = e.target.value;
+                if (category && subcategory) {
+                    populateItems(category, subcategory);
+                }
+            });
+            
+            // Event listener - Store category change (populate stores)
+            document.getElementById('expenseStoreCategory').addEventListener('change', (e) => {
+                const storeCategory = e.target.value;
+                if (storeCategory) {
+                    populateStores(storeCategory);
                 }
             });
             
