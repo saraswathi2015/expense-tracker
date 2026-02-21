@@ -2017,6 +2017,61 @@
                 </div>
             </div>
             
+            <!-- INSIGHTS TAB -->
+            <div id="insightsTab" class="tab-content">
+                <div class="tab-header">
+                    <h2>📊 Spending Insights</h2>
+                    <p style="color: var(--text-secondary); margin-top: var(--spacing-xs);">
+                        Analyze your spending patterns and find savings opportunities
+                    </p>
+                </div>
+                
+                <!-- Top Expenses Section -->
+                <div class="card">
+                    <h3>💰 Top 10 Expenses This Month</h3>
+                    <div id="topExpensesList" style="margin-top: var(--spacing-md);"></div>
+                </div>
+                
+                <!-- Most Frequent Purchases -->
+                <div class="card">
+                    <h3>🔁 Most Frequent Purchases</h3>
+                    <div id="frequentPurchasesList" style="margin-top: var(--spacing-md);"></div>
+                </div>
+                
+                <!-- Category Breakdown -->
+                <div class="card">
+                    <h3>📊 Category Breakdown</h3>
+                    <div id="categoryBreakdown" style="margin-top: var(--spacing-md);"></div>
+                </div>
+                
+                <!-- Store Comparison -->
+                <div class="card">
+                    <h3>🏪 Spending by Store</h3>
+                    <div id="storeComparison" style="margin-top: var(--spacing-md);"></div>
+                </div>
+                
+                <!-- 50/30/20 Rule -->
+                <div class="card">
+                    <h3>📈 50/30/20 Budget Rule</h3>
+                    <p style="color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--spacing-md);">
+                        Needs: 50% | Wants: 30% | Savings: 20%
+                    </p>
+                    <div id="budgetRule" style="margin-top: var(--spacing-md);"></div>
+                </div>
+                
+                <!-- Money Leaks -->
+                <div class="card">
+                    <h3>💸 Money Leak Detection</h3>
+                    <div id="moneyLeaks" style="margin-top: var(--spacing-md);"></div>
+                </div>
+                
+                <!-- Spending Patterns -->
+                <div class="card">
+                    <h3>📅 Spending Patterns</h3>
+                    <div id="spendingPatterns" style="margin-top: var(--spacing-md);"></div>
+                </div>
+            </div>
+            
             <!-- SETTINGS TAB -->
             <div id="settingsTab" class="tab-content">
                 <div class="settings-section">
@@ -2125,6 +2180,10 @@
         
         <!-- Mobile More Menu -->
         <div class="mobile-more-menu" id="mobileMoreMenu">
+            <div class="mobile-more-item" data-tab="insights" onclick="selectFromMore('insights')">
+                <span class="icon">📊</span>
+                <span>Insights</span>
+            </div>
             <div class="mobile-more-item" data-tab="recurring" onclick="selectFromMore('recurring')">
                 <span class="icon">🔄</span>
                 <span>Recurring</span>
@@ -4346,6 +4405,470 @@
             }
         }
         
+        // ===== INSIGHTS FUNCTIONS =====
+        function renderInsights() {
+            renderTopExpenses();
+            renderFrequentPurchases();
+            renderCategoryBreakdown();
+            renderStoreComparison();
+            render503020Rule();
+            renderMoneyLeaks();
+            renderSpendingPatterns();
+        }
+        
+        function renderTopExpenses() {
+            const container = document.getElementById('topExpensesList');
+            if (!container) return;
+            
+            // Get current month expenses
+            const currentMonth = getCurrentMonth();
+            const monthExpenses = state.expenses.filter(e => e.date && e.date.startsWith(currentMonth));
+            
+            // Sort by amount and take top 10
+            const top10 = monthExpenses
+                .sort((a, b) => b.amount - a.amount)
+                .slice(0, 10);
+            
+            if (top10.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-secondary);">No expenses this month yet</div>';
+                return;
+            }
+            
+            const total = monthExpenses.reduce((sum, e) => sum + e.amount, 0);
+            
+            container.innerHTML = top10.map((expense, index) => {
+                const percentage = total > 0 ? (expense.amount / total * 100).toFixed(1) : 0;
+                return `
+                    <div style="padding: var(--spacing-md); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600;">${index + 1}. ${expense.description || expense.item || 'Expense'}</div>
+                            <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
+                                ${expense.category}${expense.subcategory ? ` → ${expense.subcategory}` : ''}${expense.store || expense.storeCustom ? ` @ ${expense.store || expense.storeCustom}` : ''}
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-weight: 700; font-size: var(--text-lg);">${formatCurrency(expense.amount)}</div>
+                            <div style="font-size: var(--text-sm); color: var(--text-secondary);">${percentage}% of total</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function renderFrequentPurchases() {
+            const container = document.getElementById('frequentPurchasesList');
+            if (!container) return;
+            
+            // Count frequency of items
+            const itemCounts = {};
+            const itemTotals = {};
+            
+            state.expenses.forEach(expense => {
+                const itemName = expense.item || expense.itemCustom || expense.description;
+                if (itemName) {
+                    itemCounts[itemName] = (itemCounts[itemName] || 0) + 1;
+                    itemTotals[itemName] = (itemTotals[itemName] || 0) + expense.amount;
+                }
+            });
+            
+            // Convert to array and sort by frequency
+            const frequent = Object.entries(itemCounts)
+                .map(([item, count]) => ({
+                    item,
+                    count,
+                    total: itemTotals[item],
+                    avgPrice: itemTotals[item] / count
+                }))
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 10);
+            
+            if (frequent.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-secondary);">No frequent purchases yet</div>';
+                return;
+            }
+            
+            container.innerHTML = frequent.map((item, index) => `
+                <div style="padding: var(--spacing-md); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600;">${index + 1}. ${item.item}</div>
+                        <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
+                            Bought ${item.count} times • Avg: ${formatCurrency(item.avgPrice)}
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-weight: 700; font-size: var(--text-lg);">${formatCurrency(item.total)}</div>
+                        <div style="font-size: var(--text-sm); color: var(--text-secondary);">Total spent</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderCategoryBreakdown() {
+            const container = document.getElementById('categoryBreakdown');
+            if (!container) return;
+            
+            // Get current month expenses
+            const currentMonth = getCurrentMonth();
+            const monthExpenses = state.expenses.filter(e => e.date && e.date.startsWith(currentMonth));
+            
+            if (monthExpenses.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-secondary);">No expenses this month yet</div>';
+                return;
+            }
+            
+            // Group by category
+            const categoryTotals = {};
+            monthExpenses.forEach(expense => {
+                categoryTotals[expense.category] = (categoryTotals[expense.category] || 0) + expense.amount;
+            });
+            
+            const total = monthExpenses.reduce((sum, e) => sum + e.amount, 0);
+            
+            // Sort by amount
+            const sorted = Object.entries(categoryTotals)
+                .sort((a, b) => b[1] - a[1]);
+            
+            container.innerHTML = sorted.map(([category, amount]) => {
+                const percentage = total > 0 ? (amount / total * 100).toFixed(1) : 0;
+                const icon = CATEGORIES[category] || '📦';
+                return `
+                    <div style="padding: var(--spacing-md); border-bottom: 1px solid var(--border);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-sm);">
+                            <div style="font-weight: 600;">${icon} ${category}</div>
+                            <div style="font-weight: 700;">${formatCurrency(amount)}</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill low" style="width: ${percentage}%"></div>
+                        </div>
+                        <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
+                            ${percentage}% of total spending
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function renderStoreComparison() {
+            const container = document.getElementById('storeComparison');
+            if (!container) return;
+            
+            //Group by store
+            const storeTotals = {};
+            const storeCounts = {};
+            
+            state.expenses.forEach(expense => {
+                const store = expense.store || expense.storeCustom;
+                if (store) {
+                    storeTotals[store] = (storeTotals[store] || 0) + expense.amount;
+                    storeCounts[store] = (storeCounts[store] || 0) + 1;
+                }
+            });
+            
+            if (Object.keys(storeTotals).length === 0) {
+                container.innerHTML = '<div style="color: var(--text-secondary);">No store data available yet</div>';
+                return;
+            }
+            
+            // Sort by total amount
+            const sorted = Object.entries(storeTotals)
+                .map(([store, total]) => ({
+                    store,
+                    total,
+                    count: storeCounts[store],
+                    avgTransaction: total / storeCounts[store]
+                }))
+                .sort((a, b) => b.total - a.total)
+                .slice(0, 10);
+            
+            container.innerHTML = sorted.map((data, index) => `
+                <div style="padding: var(--spacing-md); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600;">${index + 1}. ${data.store}</div>
+                        <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
+                            ${data.count} purchases • Avg: ${formatCurrency(data.avgTransaction)}
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-weight: 700; font-size: var(--text-lg);">${formatCurrency(data.total)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function render503020Rule() {
+            const container = document.getElementById('budgetRule');
+            if (!container) return;
+            
+            // Get current month expenses and income
+            const currentMonth = getCurrentMonth();
+            const monthExpenses = state.expenses.filter(e => e.date && e.date.startsWith(currentMonth));
+            const monthIncome = state.income.filter(i => i.month === currentMonth);
+            
+            const totalExpenses = monthExpenses.reduce((sum, e) => sum + e.amount, 0);
+            const totalIncome = monthIncome.reduce((sum, i) => sum + i.amount, 0);
+            
+            if (totalIncome === 0) {
+                container.innerHTML = '<div style="color: var(--text-secondary);">Add income data to see 50/30/20 analysis</div>';
+                return;
+            }
+            
+            // Categorize expenses into Needs, Wants, Savings
+            const needs = ['Housing', 'Bills', 'Transport', 'Food', 'Health', 'Insurance'];
+            const wants = ['Shopping', 'Entertainment', 'Family'];
+            
+            let needsTotal = 0;
+            let wantsTotal = 0;
+            
+            monthExpenses.forEach(expense => {
+                if (needs.includes(expense.category)) {
+                    needsTotal += expense.amount;
+                } else if (wants.includes(expense.category)) {
+                    wantsTotal += expense.amount;
+                }
+            });
+            
+            // Calculate savings (income - expenses)
+            const savingsTotal = totalIncome - totalExpenses;
+            
+            // Calculate percentages
+            const needsPercent = (needsTotal / totalIncome * 100).toFixed(1);
+            const wantsPercent = (wantsTotal / totalIncome * 100).toFixed(1);
+            const savingsPercent = (savingsTotal / totalIncome * 100).toFixed(1);
+            
+            // Determine status
+            const needsStatus = needsPercent <= 50 ? 'low' : needsPercent <= 60 ? 'medium' : 'high';
+            const wantsStatus = wantsPercent <= 30 ? 'low' : wantsPercent <= 40 ? 'medium' : 'high';
+            const savingsStatus = savingsPercent >= 20 ? 'low' : savingsPercent >= 10 ? 'medium' : 'high';
+            
+            container.innerHTML = `
+                <div style="margin-bottom: var(--spacing-lg);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-sm);">
+                        <span>Needs (Target: 50%)</span>
+                        <span style="font-weight: 600;">${needsPercent}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill ${needsStatus}" style="width: ${Math.min(needsPercent, 100)}%"></div>
+                    </div>
+                    <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
+                        ${formatCurrency(needsTotal)} / ${formatCurrency(totalIncome * 0.5)}
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: var(--spacing-lg);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-sm);">
+                        <span>Wants (Target: 30%)</span>
+                        <span style="font-weight: 600;">${wantsPercent}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill ${wantsStatus}" style="width: ${Math.min(wantsPercent, 100)}%"></div>
+                    </div>
+                    <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
+                        ${formatCurrency(wantsTotal)} / ${formatCurrency(totalIncome * 0.3)}
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: var(--spacing-lg);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-sm);">
+                        <span>Savings (Target: 20%)</span>
+                        <span style="font-weight: 600;">${savingsPercent}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill ${savingsStatus}" style="width: ${Math.min(Math.abs(savingsPercent), 100)}%"></div>
+                    </div>
+                    <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
+                        ${formatCurrency(savingsTotal)} / ${formatCurrency(totalIncome * 0.2)}
+                    </div>
+                </div>
+                
+                ${parseFloat(needsPercent) > 50 || parseFloat(wantsPercent) > 30 || parseFloat(savingsPercent) < 20 ? `
+                    <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--accent-red); border-radius: 8px; padding: var(--spacing-md); margin-top: var(--spacing-lg);">
+                        <div style="font-weight: 600; color: var(--accent-red);">⚠️ Recommendations:</div>
+                        <ul style="margin-top: var(--spacing-sm); padding-left: var(--spacing-lg); color: var(--text-secondary); font-size: var(--text-sm);">
+                            ${parseFloat(needsPercent) > 50 ? `<li>Reduce needs spending by ${formatCurrency((needsTotal - totalIncome * 0.5))}</li>` : ''}
+                            ${parseFloat(wantsPercent) > 30 ? `<li>Cut wants spending by ${formatCurrency((wantsTotal - totalIncome * 0.3))}</li>` : ''}
+                            ${parseFloat(savingsPercent) < 20 ? `<li>Increase savings by ${formatCurrency((totalIncome * 0.2 - savingsTotal))}</li>` : ''}
+                        </ul>
+                    </div>
+                ` : `
+                    <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-green); border-radius: 8px; padding: var(--spacing-md); margin-top: var(--spacing-lg);">
+                        <div style="font-weight: 600; color: var(--accent-green);">✅ Great job! Your budget follows the 50/30/20 rule</div>
+                    </div>
+                `}
+            `;
+        }
+        
+        function renderMoneyLeaks() {
+            const container = document.getElementById('moneyLeaks');
+            if (!container) return;
+            
+            const leaks = [];
+            
+            // Check for recurring subscriptions
+            const subscriptions = state.recurring.filter(r => r.category === 'Bills');
+            const subscriptionTotal = subscriptions.reduce((sum, s) => sum + s.amount, 0);
+            
+            if (subscriptions.length > 0) {
+                leaks.push({
+                    icon: '📱',
+                    title: 'Subscriptions',
+                    description: `${subscriptions.length} recurring subscriptions`,
+                    amount: subscriptionTotal,
+                    annualCost: subscriptionTotal * 12,
+                    suggestion: 'Review and cancel unused subscriptions'
+                });
+            }
+            
+            // Check for frequent small purchases (potential impulse buys)
+            const smallPurchases = state.expenses.filter(e => e.amount < 10);
+            const smallPurchasesTotal = smallPurchases.reduce((sum, e) => sum + e.amount, 0);
+            
+            if (smallPurchases.length > 20) {
+                leaks.push({
+                    icon: '☕',
+                    title: 'Small Purchases',
+                    description: `${smallPurchases.length} purchases under $10`,
+                    amount: smallPurchasesTotal,
+                    annualCost: smallPurchasesTotal * 12,
+                    suggestion: 'These add up! Consider reducing impulse buys'
+                });
+            }
+            
+            // Check for high credit card balances
+            const creditCards = state.debts.filter(d => d.apr > 0);
+            const highBalanceCards = creditCards.filter(d => d.balance > 1000);
+            
+            if (highBalanceCards.length > 0) {
+                const totalInterest = highBalanceCards.reduce((sum, d) => sum + (d.balance * d.apr / 100 / 12), 0);
+                leaks.push({
+                    icon: '💳',
+                    title: 'Credit Card Interest',
+                    description: `${highBalanceCards.length} cards with high balances`,
+                    amount: totalInterest,
+                    annualCost: totalInterest * 12,
+                    suggestion: 'Pay down high-interest debt to save money'
+                });
+            }
+            
+            if (leaks.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-secondary);">✅ No major money leaks detected! Keep up the good work.</div>';
+                return;
+            }
+            
+            container.innerHTML = leaks.map(leak => `
+                <div style="padding: var(--spacing-md); border: 1px solid var(--accent-amber); border-radius: 8px; background: rgba(245, 158, 11, 0.1); margin-bottom: var(--spacing-md);">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div style="flex: 1;">
+                            <div style="font-size: var(--text-2xl); margin-bottom: var(--spacing-xs);">${leak.icon}</div>
+                            <div style="font-weight: 600; font-size: var(--text-lg);">${leak.title}</div>
+                            <div style="color: var(--text-secondary); font-size: var(--text-sm); margin-top: var(--spacing-xs);">${leak.description}</div>
+                            <div style="margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--border);">
+                                <div style="font-weight: 600; color: var(--accent-amber);">💡 ${leak.suggestion}</div>
+                            </div>
+                        </div>
+                        <div style="text-align: right; margin-left: var(--spacing-md);">
+                            <div style="font-weight: 700; font-size: var(--text-xl); color: var(--accent-amber);">${formatCurrency(leak.amount)}/mo</div>
+                            <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">${formatCurrency(leak.annualCost)}/year</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderSpendingPatterns() {
+            const container = document.getElementById('spendingPatterns');
+            if (!container) return;
+            
+            if (state.expenses.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-secondary);">Add more expenses to see spending patterns</div>';
+                return;
+            }
+            
+            // Group by day of week
+            const dayTotals = {
+                0: { name: 'Sunday', total: 0, count: 0 },
+                1: { name: 'Monday', total: 0, count: 0 },
+                2: { name: 'Tuesday', total: 0, count: 0 },
+                3: { name: 'Wednesday', total: 0, count: 0 },
+                4: { name: 'Thursday', total: 0, count: 0 },
+                5: { name: 'Friday', total: 0, count: 0 },
+                6: { name: 'Saturday', total: 0, count: 0 }
+            };
+            
+            state.expenses.forEach(expense => {
+                if (expense.date) {
+                    const day = new Date(expense.date).getDay();
+                    dayTotals[day].total += expense.amount;
+                    dayTotals[day].count += 1;
+                }
+            });
+            
+            // Find highest spending day
+            let maxDay = 0;
+            let maxAmount = 0;
+            Object.entries(dayTotals).forEach(([day, data]) => {
+                if (data.total > maxAmount) {
+                    maxAmount = data.total;
+                    maxDay = day;
+                }
+            });
+            
+            // Calculate month-over-month trend
+            const thisMonth = getCurrentMonth();
+            const lastMonth = getPreviousMonth(thisMonth);
+            
+            const thisMonthTotal = state.expenses
+                .filter(e => e.date && e.date.startsWith(thisMonth))
+                .reduce((sum, e) => sum + e.amount, 0);
+            
+            const lastMonthTotal = state.expenses
+                .filter(e => e.date && e.date.startsWith(lastMonth))
+                .reduce((sum, e) => sum + e.amount, 0);
+            
+            const trend = lastMonthTotal > 0 ? ((thisMonthTotal - lastMonthTotal) / lastMonthTotal * 100).toFixed(1) : 0;
+            const trendDirection = trend > 0 ? '📈 Up' : trend < 0 ? '📉 Down' : '➡️ Stable';
+            const trendColor = trend > 0 ? 'var(--accent-red)' : trend < 0 ? 'var(--accent-green)' : 'var(--text-secondary)';
+            
+            container.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+                    <div style="padding: var(--spacing-md); background: var(--bg-secondary); border-radius: 8px;">
+                        <div style="font-size: var(--text-sm); color: var(--text-secondary);">Highest Spending Day</div>
+                        <div style="font-weight: 700; font-size: var(--text-2xl); margin-top: var(--spacing-sm);">${dayTotals[maxDay].name}</div>
+                        <div style="color: var(--text-secondary); font-size: var(--text-sm); margin-top: var(--spacing-xs);">
+                            ${formatCurrency(dayTotals[maxDay].total)} total
+                        </div>
+                    </div>
+                    
+                    <div style="padding: var(--spacing-md); background: var(--bg-secondary); border-radius: 8px;">
+                        <div style="font-size: var(--text-sm); color: var(--text-secondary);">Month-over-Month</div>
+                        <div style="font-weight: 700; font-size: var(--text-2xl); margin-top: var(--spacing-sm); color: ${trendColor};">
+                            ${trendDirection} ${Math.abs(trend)}%
+                        </div>
+                        <div style="color: var(--text-secondary); font-size: var(--text-sm); margin-top: var(--spacing-xs);">
+                            ${formatCurrency(thisMonthTotal)} vs ${formatCurrency(lastMonthTotal)}
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: var(--spacing-lg);">
+                    <div style="font-weight: 600; margin-bottom: var(--spacing-md);">Spending by Day of Week:</div>
+                    ${Object.entries(dayTotals).map(([day, data]) => {
+                        const percentage = maxAmount > 0 ? (data.total / maxAmount * 100) : 0;
+                        return `
+                            <div style="margin-bottom: var(--spacing-md);">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-xs);">
+                                    <span>${data.name}</span>
+                                    <span style="font-weight: 600;">${formatCurrency(data.total)}</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill low" style="width: ${percentage}%"></div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+        
         // OCR Bill Scanning Functions
         async function scanBill(imageFile) {
             try {
@@ -6218,6 +6741,11 @@
             // Re-render charts when switching to tabs with charts
             if (tabName === 'home' || tabName === 'expenses') {
                 setTimeout(() => renderCharts(), 100);
+            }
+            
+            // Render insights when switching to insights tab
+            if (tabName === 'insights') {
+                setTimeout(() => renderInsights(), 100);
             }
             
             // Update learned items count when switching to settings
