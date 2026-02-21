@@ -972,6 +972,51 @@
             50% { opacity: 0.7; }
         }
         
+        /* Multi-Item Review Styles */
+        .multi-item-row {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--border);
+            transition: background-color 0.2s;
+        }
+        
+        .multi-item-row:hover {
+            background-color: var(--bg-tertiary);
+        }
+        
+        .multi-item-row:last-child {
+            border-bottom: none;
+        }
+        
+        .multi-item-info {
+            flex: 1;
+        }
+        
+        .multi-item-name {
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .multi-item-category {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+        
+        .multi-item-price {
+            font-weight: 700;
+            font-size: var(--text-lg);
+            color: var(--accent-green);
+            min-width: 80px;
+            text-align: right;
+        }
+        
+        .multi-item-actions {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+        
         .countdown-container {
             margin: var(--spacing-md) 0;
         }
@@ -2025,6 +2070,25 @@
                 </div>
                 
                 <div class="settings-section">
+                    <h3 class="settings-title">Smart Learning 🧠</h3>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-header">
+                            <div>
+                                <div class="settings-item-title">📚 Learned Items</div>
+                                <div class="settings-item-description">
+                                    Items you've categorized - the app learns and auto-categorizes them next time
+                                </div>
+                                <div style="margin-top: var(--spacing-sm); padding: var(--spacing-sm); background: var(--bg-tertiary); border-radius: 6px;">
+                                    <span id="learnedItemCount" style="font-weight: 600; color: var(--accent-blue);">0</span> items learned
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" onclick="viewLearnedItems()">View</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
                     <h3 class="settings-title">About</h3>
                     <div class="settings-item">
                         <div class="settings-item-title">ExpenseFlow v2.0</div>
@@ -2909,6 +2973,88 @@
         </div>
     </div>
     
+    <!-- Multi-Item Review Modal (NEW - for scanning receipts with multiple items) -->
+    <div class="modal-overlay" id="multiItemReviewModal">
+        <div class="modal" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3 class="modal-title">✅ Receipt Scanned - Review Items</h3>
+                <button class="close-btn" onclick="closeModal('multiItemReviewModal')">×</button>
+            </div>
+            
+            <div style="padding: var(--spacing-lg);">
+                <!-- Store and Summary Info -->
+                <div style="background: var(--bg-tertiary); padding: var(--spacing-md); border-radius: 8px; margin-bottom: var(--spacing-lg);">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-md);">
+                        <div>
+                            <div style="font-size: var(--text-sm); color: var(--text-secondary);">Store</div>
+                            <div style="font-weight: 600; margin-top: var(--spacing-xs);" id="multiStoreName">-</div>
+                        </div>
+                        <div>
+                            <div style="font-size: var(--text-sm); color: var(--text-secondary);">Date</div>
+                            <input type="date" class="form-input" id="multiDate" style="margin-top: var(--spacing-xs);">
+                        </div>
+                        <div>
+                            <div style="font-size: var(--text-sm); color: var(--text-secondary);">Items Found</div>
+                            <div style="font-weight: 600; margin-top: var(--spacing-xs);" id="multiItemCount">0</div>
+                        </div>
+                        <div>
+                            <div style="font-size: var(--text-sm); color: var(--text-secondary);">Total</div>
+                            <div style="font-weight: 600; color: var(--accent-green); margin-top: var(--spacing-xs);" id="multiTotal">$0.00</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Info Box -->
+                <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid var(--accent-blue); border-radius: 8px; padding: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+                    <div style="font-weight: 600; color: var(--accent-blue);">📋 Review Each Item</div>
+                    <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
+                        We've automatically categorized each item. You can edit or remove items before adding them to your expenses.
+                    </div>
+                </div>
+                
+                <!-- Items List -->
+                <div id="multiItemReviewContainer">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md);">
+                        <div style="font-weight: 600;">Scanned Items:</div>
+                        <button type="button" class="btn btn-sm" style="background: var(--accent-blue); color: white;" onclick="toggleAddItemForm()">
+                            ➕ Add Item Manually
+                        </button>
+                    </div>
+                    
+                    <!-- Quick Add Item Form (hidden by default) -->
+                    <div id="quickAddItemForm" style="display: none; background: var(--bg-tertiary); border: 2px solid var(--accent-blue); border-radius: 8px; padding: var(--spacing-md); margin-bottom: var(--spacing-md);">
+                        <div style="font-weight: 600; margin-bottom: var(--spacing-sm); color: var(--accent-blue);">➕ Add Missed Item</div>
+                        <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: var(--spacing-sm); align-items: end;">
+                            <div>
+                                <label style="font-size: var(--text-sm); color: var(--text-secondary); display: block; margin-bottom: var(--spacing-xs);">Item Name</label>
+                                <input type="text" class="form-input" id="quickItemName" placeholder="e.g., Tomato">
+                            </div>
+                            <div>
+                                <label style="font-size: var(--text-sm); color: var(--text-secondary); display: block; margin-bottom: var(--spacing-xs);">Price</label>
+                                <input type="number" class="form-input" id="quickItemPrice" placeholder="0.00" step="0.01">
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="addQuickItem()">Add</button>
+                        </div>
+                    </div>
+                    
+                    <div id="multiItemsList" style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: var(--spacing-sm);">
+                        <!-- Items will be populated here -->
+                    </div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('multiItemReviewModal')">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="addAllScannedItems()">
+                        ✅ Add All Items (<span id="addAllCount">0</span>)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Parse SMS Modal -->
     <div class="modal-overlay" id="parseSMSModal">
         <div class="modal">
@@ -3122,6 +3268,7 @@
             income: [],
             savingsGoals: [],
             investments: [],
+            learnedItems: {}, // NEW: Store learned item categorizations
             settings: {
                 currency: '$',
                 budgetMonth: getCurrentMonth()
@@ -4202,9 +4349,9 @@
         // OCR Bill Scanning Functions
         async function scanBill(imageFile) {
             try {
-                showLoadingOverlay('Scanning receipt... This may take 10-20 seconds');
+                showLoadingOverlay('Scanning receipt... This may take 15-25 seconds');
                 
-                // Create worker with better settings
+                // Create worker with optimal settings for receipts
                 const worker = await Tesseract.createWorker('eng', 1, {
                     logger: m => {
                         if (m.status === 'recognizing text') {
@@ -4214,19 +4361,21 @@
                     }
                 });
                 
-                // Configure for better receipt recognition
+                // Configure for BEST receipt recognition
                 await worker.setParameters({
-                    tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,/$-:',
-                    tessedit_pageseg_mode: Tesseract.PSM.AUTO,
+                    tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK,
+                    tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,/$-:()@&',
                 });
                 
                 const { data: { text } } = await worker.recognize(imageFile);
                 await worker.terminate();
                 
-                const extractedData = extractBillData(text);
+                console.log('OCR Raw Text:', text); // For debugging
+                
+                const extractedData = extractMultiItemBillData(text);
                 
                 hideLoadingOverlay();
-                showScanReview(extractedData);
+                showMultiItemReview(extractedData);
                 
             } catch (error) {
                 hideLoadingOverlay();
@@ -4235,40 +4384,217 @@
             }
         }
         
-        function extractBillData(ocrText) {
-            const lines = ocrText.split('\n').filter(line => line.trim());
+        function extractMultiItemBillData(ocrText) {
+            const lines = ocrText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
             
-            // Try to find merchant name - look for capitalized text at the start
-            let merchant = 'Unknown Merchant';
-            for (const line of lines.slice(0, 5)) {
-                if (line.length > 3 && line.length < 50 && /[A-Z]/.test(line)) {
-                    merchant = line.trim();
-                    break;
+            // 1. Extract store name (usually first 1-3 lines with uppercase/capitalized text)
+            let storeName = 'Unknown Store';
+            for (let i = 0; i < Math.min(5, lines.length); i++) {
+                const line = lines[i];
+                // Look for store names (capitalized, not too long, no prices)
+                if (line.length > 3 && line.length < 50 && !line.match(/\$?\d+\.\d{2}/) && /[A-Z]/.test(line)) {
+                    // Check against known stores
+                    const knownStores = ['patel', 'costco', 'walmart', 'target', 'shoprite', 'whole foods', 
+                                        'trader', 'igo', 'halal', 'dey', 'hmart', 'stop', 'wegmans'];
+                    const lowerLine = line.toLowerCase();
+                    if (knownStores.some(store => lowerLine.includes(store))) {
+                        storeName = line;
+                        break;
+                    }
+                    // If no match but looks like a store name (capitalized, no numbers)
+                    if (i < 3 && /^[A-Z][a-zA-Z\s&]+$/.test(line)) {
+                        storeName = line;
+                        break;
+                    }
                 }
             }
             
-            // Extract amount - look for currency amounts, prefer "TOTAL" lines
-            const amountRegex = /(?:total|amount|balance)?[\s:]*\$?\s*(\d+\.\d{2})/gi;
-            const amounts = [...ocrText.matchAll(amountRegex)];
-            let amount = 0;
-            
-            // Prefer amounts near "total" or "amount" keywords
-            const totalAmount = amounts.find(m => /total|amount|balance/i.test(m[0]));
-            if (totalAmount) {
-                amount = parseFloat(totalAmount[1]);
-            } else if (amounts.length > 0) {
-                // Take the largest amount as it's usually the total
-                amount = Math.max(...amounts.map(m => parseFloat(m[1])));
-            }
-            
-            // Extract date
+            // 2. Extract date
             const dateRegex = /(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/;
             const dateMatch = ocrText.match(dateRegex);
             const date = dateMatch ? parseDateFromReceipt(dateMatch[1]) : getTodayLocalDate();
             
-            const category = suggestCategory(merchant);
+            // 3. Extract line items (product + price)
+            const items = [];
+            const lineItemRegex = /^(.+?)\s+(\d+(?:\.\d{1,2})?)\s*(?:lbs?|lb|kg|oz|g|gal|qt|pc|pcs|ea|each)?\s*\$?\s*(\d+\.\d{2})$/i;
+            const simpleItemRegex = /^(.+?)\s+\$?\s*(\d+\.\d{2})$/;
             
-            return { merchant, amount, date, category, rawText: ocrText };
+            for (const line of lines) {
+                // Skip header/footer lines
+                if (line.toLowerCase().includes('total') || 
+                    line.toLowerCase().includes('subtotal') ||
+                    line.toLowerCase().includes('tax') ||
+                    line.toLowerCase().includes('thank you') ||
+                    line.toLowerCase().includes('receipt') ||
+                    line.length < 3) {
+                    continue;
+                }
+                
+                // Try to match line item with quantity
+                let match = line.match(lineItemRegex);
+                if (match) {
+                    const [, itemName, quantity, price] = match;
+                    items.push({
+                        name: itemName.trim(),
+                        quantity: quantity,
+                        price: parseFloat(price)
+                    });
+                    continue;
+                }
+                
+                // Try to match simple line item (no quantity)
+                match = line.match(simpleItemRegex);
+                if (match) {
+                    const [, itemName, price] = match;
+                    const priceNum = parseFloat(price);
+                    // Only accept reasonable prices (between $0.10 and $999.99)
+                    if (priceNum >= 0.10 && priceNum < 1000) {
+                        items.push({
+                            name: itemName.trim(),
+                            quantity: null,
+                            price: priceNum
+                        });
+                    }
+                }
+            }
+            
+            // 4. If no items found, try alternate parsing (sometimes items are on multiple lines)
+            if (items.length === 0) {
+                // Look for any line with a price
+                const priceRegex = /\$?\s*(\d+\.\d{2})/g;
+                for (const line of lines) {
+                    const prices = [...line.matchAll(priceRegex)];
+                    if (prices.length === 1) {
+                        const price = parseFloat(prices[0][1]);
+                        if (price >= 0.10 && price < 1000) {
+                            const itemName = line.replace(priceRegex, '').trim();
+                            if (itemName.length > 2 && itemName.length < 100) {
+                                items.push({
+                                    name: itemName,
+                                    quantity: null,
+                                    price: price
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // 5. Extract total
+            const totalRegex = /(?:total|amount due|balance)[\s:]*\$?\s*(\d+\.\d{2})/i;
+            const totalMatch = ocrText.match(totalRegex);
+            const total = totalMatch ? parseFloat(totalMatch[1]) : items.reduce((sum, item) => sum + item.price, 0);
+            
+            // 6. Auto-categorize items using your detailed categories
+            const categorizedItems = items.map(item => {
+                const suggestion = suggestDetailedItem(item.name);
+                return {
+                    ...item,
+                    category: suggestion.category,
+                    subcategory: suggestion.subcategory,
+                    suggestedItem: suggestion.item,
+                    store: storeName
+                };
+            });
+            
+            return {
+                storeName,
+                date,
+                items: categorizedItems,
+                total,
+                rawText: ocrText
+            };
+        }
+        
+        function suggestDetailedItem(itemName) {
+            const name = itemName.toLowerCase();
+            
+            // PRIORITY 1: Check learned items first (from user history)
+            if (state.learnedItems[name]) {
+                const learned = state.learnedItems[name];
+                return {
+                    category: learned.category,
+                    subcategory: learned.subcategory,
+                    item: learned.item
+                };
+            }
+            
+            // PRIORITY 2: Try to match against your detailed item database
+            for (const [category, subcategories] of Object.entries(DETAILED_CATEGORIES)) {
+                for (const [subcategory, items] of Object.entries(subcategories)) {
+                    for (const item of items) {
+                        const itemLower = item.toLowerCase();
+                        // Fuzzy matching
+                        if (name.includes(itemLower) || itemLower.includes(name)) {
+                            return { category, subcategory, item };
+                        }
+                    }
+                }
+            }
+            
+            // PRIORITY 3: Fallback - Use basic category matching
+            const basicCategory = suggestCategory(itemName);
+            return { category: basicCategory, subcategory: null, item: null };
+        }
+        
+        // Learn item categorization for future use
+        function learnItemCategorization(itemName, category, subcategory, item) {
+            const name = itemName.toLowerCase();
+            
+            // Store the categorization
+            state.learnedItems[name] = {
+                category: category,
+                subcategory: subcategory,
+                item: item,
+                learnedAt: new Date().toISOString(),
+                usageCount: (state.learnedItems[name]?.usageCount || 0) + 1
+            };
+            
+            saveData();
+            
+            console.log(`📚 Learned: "${itemName}" → ${category}${subcategory ? ' → ' + subcategory : ''}${item ? ' → ' + item : ''}`);
+        }
+        
+        function showMultiItemReview(data) {
+            const reviewContainer = document.getElementById('multiItemReviewContainer');
+            if (!reviewContainer) {
+                // Create multi-item review modal if it doesn't exist
+                console.error('Multi-item review container not found');
+                return;
+            }
+            
+            // Store data for later use
+            window.scannedItems = data;
+            
+            // Populate review UI
+            document.getElementById('multiStoreName').textContent = data.storeName;
+            document.getElementById('multiDate').value = data.date;
+            document.getElementById('multiTotal').textContent = formatCurrency(data.total);
+            document.getElementById('multiItemCount').textContent = data.items.length;
+            
+            // Build items list
+            const itemsList = document.getElementById('multiItemsList');
+            itemsList.innerHTML = data.items.map((item, index) => `
+                <div class="multi-item-row" data-index="${index}">
+                    <div class="multi-item-info">
+                        <div class="multi-item-name">${item.name}${item.quantity ? ` (${item.quantity})` : ''}</div>
+                        <div class="multi-item-category">
+                            ${item.category}${item.subcategory ? ` → ${item.subcategory}` : ''}${item.suggestedItem ? ` → ${item.suggestedItem}` : ''}
+                        </div>
+                    </div>
+                    <div class="multi-item-price">${formatCurrency(item.price)}</div>
+                    <div class="multi-item-actions">
+                        <button class="btn btn-secondary btn-sm" onclick="editScannedItem(${index})">✏️</button>
+                        <button class="btn btn-danger btn-sm" onclick="removeScannedItem(${index})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            closeModal('scanBillModal');
+            openModal('multiItemReviewModal');
+            
+            // Update count in button
+            updateAddAllCount();
         }
         
         function parseDateFromReceipt(dateStr) {
@@ -4343,6 +4669,166 @@
             
             closeModal('scanBillModal');
             openModal('scanReviewModal');
+        }
+        
+        // Multi-Item Review Functions
+        function editScannedItem(index) {
+            const items = window.scannedItems.items;
+            const item = items[index];
+            
+            // Simple prompt-based editing for now
+            const newName = prompt('Item name:', item.name);
+            if (newName !== null && newName.trim()) {
+                item.name = newName.trim();
+            }
+            
+            const newPrice = prompt('Price:', item.price);
+            if (newPrice !== null && !isNaN(parseFloat(newPrice))) {
+                item.price = parseFloat(newPrice);
+            }
+            
+            // Refresh display
+            showMultiItemReview(window.scannedItems);
+        }
+        
+        function removeScannedItem(index) {
+            if (confirm('Remove this item from the list?')) {
+                window.scannedItems.items.splice(index, 1);
+                
+                // Recalculate total
+                window.scannedItems.total = window.scannedItems.items.reduce((sum, item) => sum + item.price, 0);
+                
+                // Refresh display
+                showMultiItemReview(window.scannedItems);
+            }
+        }
+        
+        function addAllScannedItems() {
+            const data = window.scannedItems;
+            
+            if (!data || !data.items || data.items.length === 0) {
+                showToast('❌ No items to add');
+                return;
+            }
+            
+            const date = document.getElementById('multiDate').value;
+            const paymentMethod = 'cash'; // Default, could add selector later
+            
+            // Add each item as a separate expense
+            data.items.forEach(item => {
+                const expense = {
+                    amount: item.price,
+                    description: item.name,
+                    category: item.category,
+                    date: date,
+                    paymentMethod: paymentMethod
+                };
+                
+                // Add detailed fields if available
+                if (item.subcategory) expense.subcategory = item.subcategory;
+                if (item.suggestedItem) expense.item = item.suggestedItem;
+                if (item.store) expense.storeCustom = item.store;
+                
+                addExpense(expense);
+                
+                // LEARN this item's categorization for future auto-categorization
+                learnItemCategorization(
+                    item.name,
+                    item.category,
+                    item.subcategory,
+                    item.suggestedItem
+                );
+            });
+            
+            renderBudgets();
+            updateDashboard();
+            
+            showToast(`✅ Added ${data.items.length} items from ${data.storeName}!`);
+            closeModal('multiItemReviewModal');
+            
+            // Clear stored data
+            window.scannedItems = null;
+        }
+        
+        // Update item count in "Add All" button
+        function updateAddAllCount() {
+            const countSpan = document.getElementById('addAllCount');
+            const itemCountSpan = document.getElementById('multiItemCount');
+            const totalSpan = document.getElementById('multiTotal');
+            
+            if (window.scannedItems) {
+                const count = window.scannedItems.items.length;
+                const total = window.scannedItems.items.reduce((sum, item) => sum + item.price, 0);
+                
+                if (countSpan) countSpan.textContent = count;
+                if (itemCountSpan) itemCountSpan.textContent = count;
+                if (totalSpan) totalSpan.textContent = formatCurrency(total);
+            }
+        }
+        
+        // Toggle quick add item form
+        function toggleAddItemForm() {
+            const form = document.getElementById('quickAddItemForm');
+            if (form) {
+                const isVisible = form.style.display !== 'none';
+                form.style.display = isVisible ? 'none' : 'block';
+                
+                if (!isVisible) {
+                    // Focus on item name input
+                    document.getElementById('quickItemName').focus();
+                }
+            }
+        }
+        
+        // Add item from quick add form
+        function addQuickItem() {
+            const nameInput = document.getElementById('quickItemName');
+            const priceInput = document.getElementById('quickItemPrice');
+            
+            const name = nameInput.value.trim();
+            const price = parseFloat(priceInput.value);
+            
+            // Validation
+            if (!name) {
+                showToast('⚠️ Please enter item name');
+                nameInput.focus();
+                return;
+            }
+            
+            if (isNaN(price) || price <= 0) {
+                showToast('⚠️ Please enter valid price');
+                priceInput.focus();
+                return;
+            }
+            
+            // Auto-categorize the new item
+            const suggestion = suggestDetailedItem(name);
+            
+            // Add to scanned items
+            const newItem = {
+                name: name,
+                quantity: null,
+                price: price,
+                category: suggestion.category,
+                subcategory: suggestion.subcategory,
+                suggestedItem: suggestion.item,
+                store: window.scannedItems.storeName
+            };
+            
+            window.scannedItems.items.push(newItem);
+            window.scannedItems.total += price;
+            
+            // Clear form
+            nameInput.value = '';
+            priceInput.value = '';
+            
+            // Refresh display
+            showMultiItemReview(window.scannedItems);
+            
+            // Hide form
+            toggleAddItemForm();
+            
+            showToast(`✅ Added ${name} to the list`);
         }
         
         // SMS/Email Parser Functions
@@ -5349,6 +5835,17 @@
                 addExpense(expense);
                 renderBudgets(); // Update budget display
                 
+                // LEARN item categorization if detailed fields were provided
+                if (expense.subcategory || expense.item || expense.itemCustom) {
+                    const itemToLearn = expense.itemCustom || expense.item || expense.description;
+                    learnItemCategorization(
+                        itemToLearn,
+                        expense.category,
+                        expense.subcategory,
+                        expense.item
+                    );
+                }
+                
                 // Update credit card balance if paid with credit
                 if (expense.paymentMethod === 'credit' && expense.creditCardId) {
                     const card = state.debts.find(d => d.id === expense.creditCardId);
@@ -5722,6 +6219,53 @@
             if (tabName === 'home' || tabName === 'expenses') {
                 setTimeout(() => renderCharts(), 100);
             }
+            
+            // Update learned items count when switching to settings
+            if (tabName === 'settings') {
+                updateLearnedItemsCount();
+            }
+        }
+        
+        // Update learned items count display
+        function updateLearnedItemsCount() {
+            const countSpan = document.getElementById('learnedItemCount');
+            if (countSpan && state.learnedItems) {
+                const count = Object.keys(state.learnedItems).length;
+                countSpan.textContent = count;
+            }
+        }
+        
+        // View learned items
+        function viewLearnedItems() {
+            const items = state.learnedItems;
+            const count = Object.keys(items).length;
+            
+            if (count === 0) {
+                alert('No items learned yet!\n\nThe app will learn items as you:\n1. Add expenses with detailed categories\n2. Scan receipts and categorize items\n3. Use the app regularly');
+                return;
+            }
+            
+            let message = `📚 Learned Items (${count}):\n\n`;
+            message += 'These items will be auto-categorized next time:\n\n';
+            
+            // Sort by usage count
+            const sortedItems = Object.entries(items)
+                .sort((a, b) => (b[1].usageCount || 0) - (a[1].usageCount || 0))
+                .slice(0, 20); // Show top 20
+            
+            sortedItems.forEach(([itemName, data]) => {
+                message += `• ${itemName}\n`;
+                message += `  → ${data.category}`;
+                if (data.subcategory) message += ` → ${data.subcategory}`;
+                if (data.item) message += ` → ${data.item}`;
+                message += `\n  Used ${data.usageCount || 1}x\n\n`;
+            });
+            
+            if (count > 20) {
+                message += `... and ${count - 20} more items`;
+            }
+            
+            alert(message);
         }
         
         // Mobile More Menu Functions
@@ -6021,6 +6565,16 @@
             
             // Event listeners - Filter tabs
             document.querySelector('.filter-tabs').addEventListener('click', handleFilterChange);
+            
+            // Event listeners - Quick add item (Enter key support)
+            const quickItemPrice = document.getElementById('quickItemPrice');
+            if (quickItemPrice) {
+                quickItemPrice.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        addQuickItem();
+                    }
+                });
+            }
             
             // Close modals on overlay click
             document.querySelectorAll('.modal-overlay').forEach(overlay => {
