@@ -4015,9 +4015,21 @@
             try {
                 showLoadingOverlay('Scanning receipt... This may take 10-20 seconds');
                 
-                const worker = await Tesseract.createWorker();
-                await worker.loadLanguage('eng');
-                await worker.initialize('eng');
+                // Create worker with better settings
+                const worker = await Tesseract.createWorker('eng', 1, {
+                    logger: m => {
+                        if (m.status === 'recognizing text') {
+                            const progress = Math.round(m.progress * 100);
+                            showLoadingOverlay(`Scanning receipt... ${progress}%`);
+                        }
+                    }
+                });
+                
+                // Configure for better receipt recognition
+                await worker.setParameters({
+                    tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,/$-:',
+                    tessedit_pageseg_mode: Tesseract.PSM.AUTO,
+                });
                 
                 const { data: { text } } = await worker.recognize(imageFile);
                 await worker.terminate();
@@ -4036,17 +4048,34 @@
         
         function extractBillData(ocrText) {
             const lines = ocrText.split('\n').filter(line => line.trim());
-            const merchant = lines[0] || 'Unknown Merchant';
             
-            // Extract amount (look for $ followed by numbers)
-            const amountRegex = /\$?\s*(\d+\.\d{2})/g;
+            // Try to find merchant name - look for capitalized text at the start
+            let merchant = 'Unknown Merchant';
+            for (const line of lines.slice(0, 5)) {
+                if (line.length > 3 && line.length < 50 && /[A-Z]/.test(line)) {
+                    merchant = line.trim();
+                    break;
+                }
+            }
+            
+            // Extract amount - look for currency amounts, prefer "TOTAL" lines
+            const amountRegex = /(?:total|amount|balance)?[\s:]*\$?\s*(\d+\.\d{2})/gi;
             const amounts = [...ocrText.matchAll(amountRegex)];
-            const amount = amounts.length > 0 ? parseFloat(amounts[amounts.length - 1][1]) : 0;
+            let amount = 0;
+            
+            // Prefer amounts near "total" or "amount" keywords
+            const totalAmount = amounts.find(m => /total|amount|balance/i.test(m[0]));
+            if (totalAmount) {
+                amount = parseFloat(totalAmount[1]);
+            } else if (amounts.length > 0) {
+                // Take the largest amount as it's usually the total
+                amount = Math.max(...amounts.map(m => parseFloat(m[1])));
+            }
             
             // Extract date
             const dateRegex = /(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/;
             const dateMatch = ocrText.match(dateRegex);
-            const date = dateMatch ? parseDateFromReceipt(dateMatch[1]) : new Date().toISOString().split('T')[0];
+            const date = dateMatch ? parseDateFromReceipt(dateMatch[1]) : getTodayLocalDate();
             
             const category = suggestCategory(merchant);
             
@@ -4070,7 +4099,7 @@
                 }
                 return `${year}-${month}-${day}`;
             }
-            return new Date().toISOString().split('T')[0];
+            return getTodayLocalDate();
         }
         
         function suggestCategory(merchantName) {
@@ -4190,7 +4219,7 @@
             // Extract date
             const dateRegex = /(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/;
             const dateMatch = messageText.match(dateRegex);
-            extracted.date = dateMatch ? parseDateFromReceipt(dateMatch[1]) : new Date().toISOString().split('T')[0];
+            extracted.date = dateMatch ? parseDateFromReceipt(dateMatch[1]) : getTodayLocalDate();
             
             // Suggest category
             if (extracted.merchant) {
