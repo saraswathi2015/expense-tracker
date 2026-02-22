@@ -4043,10 +4043,17 @@
         }
         
         function markBillAsPaid(recurringId) {
-            const recurring = state.recurring.find(r => r.id === recurringId);
-            if (!recurring) return;
+            // PREVENT DOUBLE-CLICK
+            if (window.processingBillPayment) return;
+            window.processingBillPayment = true;
             
-            const todayStr = new Date().toISOString().split('T')[0];
+            const recurring = state.recurring.find(r => r.id === recurringId);
+            if (!recurring) {
+                window.processingBillPayment = false;
+                return;
+            }
+            
+            const todayStr = getTodayLocalDate();
             
             // Create the transaction manually
             const transaction = {
@@ -4068,7 +4075,14 @@
             saveData();
             renderExpenses();
             renderUpcomingBills();
+            renderRecurring();
+            
             showToast(`✅ Marked as paid: ${recurring.name}`);
+            
+            // Re-enable after 1 second
+            setTimeout(() => {
+                window.processingBillPayment = false;
+            }, 1000);
         }
         
         // ===== INCOME & TAX TRACKING FUNCTIONS =====
@@ -4420,30 +4434,40 @@
             const container = document.getElementById('topExpensesList');
             if (!container) return;
             
-            // Get current month expenses
-            const currentMonth = getCurrentMonth();
-            const monthExpenses = state.expenses.filter(e => e.date && e.date.startsWith(currentMonth));
+            // Get current month expenses with PROPER filtering
+            const currentMonth = getCurrentMonth(); // Returns "2026-02"
+            const monthExpenses = state.expenses.filter(e => {
+                if (!e.date) return false;
+                // Compare YYYY-MM part only
+                return e.date.substring(0, 7) === currentMonth;
+            });
+            
+            if (monthExpenses.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-secondary);">No expenses this month yet</div>';
+                return;
+            }
             
             // Sort by amount and take top 10
             const top10 = monthExpenses
                 .sort((a, b) => b.amount - a.amount)
                 .slice(0, 10);
             
-            if (top10.length === 0) {
-                container.innerHTML = '<div style="color: var(--text-secondary);">No expenses this month yet</div>';
-                return;
-            }
-            
             const total = monthExpenses.reduce((sum, e) => sum + e.amount, 0);
             
             container.innerHTML = top10.map((expense, index) => {
                 const percentage = total > 0 ? (expense.amount / total * 100).toFixed(1) : 0;
+                const displayName = expense.itemCustom || expense.item || expense.description || 'Unnamed';
+                const categoryInfo = expense.subcategory 
+                    ? `${expense.category} → ${expense.subcategory}` 
+                    : expense.category;
+                const storeInfo = expense.storeCustom || expense.store || '';
+                
                 return `
                     <div style="padding: var(--spacing-md); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
                         <div style="flex: 1;">
-                            <div style="font-weight: 600;">${index + 1}. ${expense.description || expense.item || 'Expense'}</div>
+                            <div style="font-weight: 600;">${index + 1}. ${displayName}</div>
                             <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
-                                ${expense.category}${expense.subcategory ? ` → ${expense.subcategory}` : ''}${expense.store || expense.storeCustom ? ` @ ${expense.store || expense.storeCustom}` : ''}
+                                ${categoryInfo}${storeInfo ? ` @ ${storeInfo}` : ''}
                             </div>
                         </div>
                         <div style="text-align: right;">
@@ -4459,31 +4483,37 @@
             const container = document.getElementById('frequentPurchasesList');
             if (!container) return;
             
-            // Count frequency of items
+            // Count frequency of items with proper normalization
             const itemCounts = {};
             const itemTotals = {};
             
             state.expenses.forEach(expense => {
-                const itemName = expense.item || expense.itemCustom || expense.description;
-                if (itemName) {
-                    itemCounts[itemName] = (itemCounts[itemName] || 0) + 1;
-                    itemTotals[itemName] = (itemTotals[itemName] || 0) + expense.amount;
-                }
+                // Get item name with priority
+                const itemName = (expense.itemCustom || expense.item || expense.description || '').trim();
+                
+                if (!itemName || itemName === 'Unnamed' || itemName.length === 0) return;
+                
+                // Normalize for grouping (lowercase)
+                const normalizedName = itemName.toLowerCase();
+                
+                itemCounts[normalizedName] = (itemCounts[normalizedName] || 0) + 1;
+                itemTotals[normalizedName] = (itemTotals[normalizedName] || 0) + expense.amount;
             });
             
             // Convert to array and sort by frequency
             const frequent = Object.entries(itemCounts)
                 .map(([item, count]) => ({
-                    item,
+                    item: item.charAt(0).toUpperCase() + item.slice(1), // Capitalize
                     count,
                     total: itemTotals[item],
                     avgPrice: itemTotals[item] / count
                 }))
+                .filter(item => item.count >= 2) // Only show items bought 2+ times
                 .sort((a, b) => b.count - a.count)
                 .slice(0, 10);
             
             if (frequent.length === 0) {
-                container.innerHTML = '<div style="color: var(--text-secondary);">No frequent purchases yet</div>';
+                container.innerHTML = '<div style="color: var(--text-secondary);">No frequent purchases yet. Buy items multiple times to see patterns.</div>';
                 return;
             }
             
@@ -4507,9 +4537,12 @@
             const container = document.getElementById('categoryBreakdown');
             if (!container) return;
             
-            // Get current month expenses
+            // Get current month expenses with PROPER filtering
             const currentMonth = getCurrentMonth();
-            const monthExpenses = state.expenses.filter(e => e.date && e.date.startsWith(currentMonth));
+            const monthExpenses = state.expenses.filter(e => {
+                if (!e.date) return false;
+                return e.date.substring(0, 7) === currentMonth;
+            });
             
             if (monthExpenses.length === 0) {
                 container.innerHTML = '<div style="color: var(--text-secondary);">No expenses this month yet</div>';
@@ -6299,6 +6332,14 @@
         function handleAddExpense(e) {
             e.preventDefault();
             
+            // PREVENT DOUBLE SUBMISSION
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            if (submitBtn && submitBtn.disabled) return;
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Adding...';
+            }
+            
             const form = document.getElementById('addExpenseForm');
             const editId = form.dataset.editId;
             
@@ -6393,11 +6434,24 @@
             }
             
             closeModal('addExpenseModal');
-            form.reset();
             
-            // Reset modal
+            // COMPREHENSIVE FORM RESET
+            form.reset();
+            document.getElementById('expenseDate').value = getTodayLocalDate();
+            
+            // Clear detailed fields
+            const detailedGroups = ['detailedSubcategoryGroup', 'detailedItemGroup', 'storeSelectGroup', 'creditCardSelectGroup', 'insuranceSubcategoryGroup', 'insuranceDeductibleGroup'];
+            detailedGroups.forEach(groupId => {
+                const group = document.getElementById(groupId);
+                if (group) group.classList.remove('active');
+            });
+            
+            // Reset modal title and button
             document.querySelector('#addExpenseModal .modal-title').textContent = 'Add Expense';
-            document.querySelector('#addExpenseForm button[type="submit"]').textContent = 'Add Expense';
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Add Expense';
+            }
         }
         
         function handleEditBudgets(e) {
