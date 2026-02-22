@@ -27,8 +27,8 @@
             /* Background Colors */
             --bg-primary: #0A0F1E;
             --bg-secondary: #111827;
-            --bg-tertiary: #1F2937;
-            --bg-hover: #374151;
+            --bg-tertiary: #1a2235;
+            --bg-hover: #243048;
             
             /* Overlay */
             --overlay-light: rgba(255, 255, 255, 0.04);
@@ -463,6 +463,45 @@
             transition: all var(--transition-base);
         }
         
+        .form-select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394A3B8' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 2.5rem;
+            cursor: pointer;
+        }
+        
+        /* Force dark background on native option list */
+        .form-select option,
+        select option {
+            background-color: #1a2235;
+            color: #F1F5F9;
+        }
+        
+        .form-select option:hover,
+        select option:hover,
+        .form-select option:focus,
+        select option:focus,
+        .form-select option:checked,
+        select option:checked {
+            background-color: #2d1f5e;
+            color: #F1F5F9;
+        }
+        
+        /* Global select override — catches any select not using .form-select */
+        select {
+            background-color: #111827;
+            color: #F1F5F9;
+        }
+        
+        /* Placeholder / empty option */
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+        
         .form-input:focus,
         .form-select:focus,
         .form-textarea:focus {
@@ -475,6 +514,12 @@
         .form-textarea {
             resize: vertical;
             min-height: 80px;
+        }
+        
+        /* Checkbox & radio theming */
+        input[type="checkbox"],
+        input[type="radio"] {
+            accent-color: var(--accent-purple);
         }
         
         /* ===== MODALS ===== */
@@ -1409,7 +1454,7 @@
         
         .insurance-card.deductible-met {
             border-left-color: var(--accent-green);
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), var(--bg-secondary));
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(255,255,255,0.02));
         }
         
         .insurance-card.almost-met {
@@ -1485,7 +1530,8 @@
             justify-content: space-between;
             align-items: center;
             padding: var(--spacing-sm);
-            background: var(--bg-tertiary);
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--glass-border);
             border-radius: 6px;
             margin-bottom: var(--spacing-xs);
             font-size: var(--text-sm);
@@ -1918,7 +1964,7 @@
             border: 1px solid var(--glass-border);
             border-radius: var(--radius-sm);
             color: var(--text-primary);
-            font-family: monospace;
+            font-family: 'Space Mono', monospace;
             font-size: var(--text-sm);
             resize: vertical;
             transition: all var(--transition-base);
@@ -1928,6 +1974,7 @@
             outline: none;
             border-color: rgba(139, 92, 246, 0.6);
             box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+            background: rgba(139, 92, 246, 0.04);
         }
         
         .tips-box {
@@ -1951,6 +1998,69 @@
         
         .mb-lg {
             margin-bottom: var(--spacing-lg);
+        }
+        
+        /* ===== GLOBAL NATIVE ELEMENT DARK MODE FIXES ===== */
+        /* Covers ALL inputs/selects/textareas anywhere in the app */
+        input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+        textarea {
+            background-color: rgba(255, 255, 255, 0.04) !important;
+            color: #F1F5F9 !important;
+            border-color: rgba(255, 255, 255, 0.12) !important;
+        }
+        
+        select {
+            background-color: #111827 !important;
+            color: #F1F5F9 !important;
+            border-color: rgba(255, 255, 255, 0.12) !important;
+        }
+        
+        option,
+        optgroup {
+            background-color: #1a2235 !important;
+            color: #F1F5F9 !important;
+        }
+        
+        /* Number input spinners */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            filter: invert(1) opacity(0.4);
+        }
+        
+        /* Date/time picker icon */
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1) opacity(0.5);
+        }
+        
+        /* File input */
+        input[type="file"] {
+            color: var(--text-secondary);
+        }
+        
+        /* Scrollbar styling for dark theme */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.03);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.3);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.5);
+        }
+        
+        /* Selection color */
+        ::selection {
+            background: rgba(139, 92, 246, 0.3);
+            color: #F1F5F9;
         }
     </style>
 </head>
